@@ -1,3 +1,11 @@
 {
-  "extends": "@react-native/typescript-config/tsconfig.json"
+  "extends": "@react-native/typescript-config/tsconfig.json",
+  "compilerOptions": {
+    "strict": true,          // Enables strict type checking
+    "noImplicitAny": true,   // Ensures all variables have explicit types
+    "jsx": "react",          // Enables JSX support for React
+    "skipLibCheck": true     // Skips type checking of declaration files (helps with performance)
+  },
+  "include": ["src/**/*"],    // Specifies which files TypeScript should include (adjust based on your folder structure)
+  "exclude": ["node_modules"] // Excludes node_modules from type checking
 }

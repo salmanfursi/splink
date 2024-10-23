@@ -1,3 +1,5 @@
+
 <resources>
     <string name="app_name">spLink</string>
+    <string name="splink">spLink</string> <!-- Add this line -->
 </resources>
