@@ -1,34 +1,85 @@
+// import React from 'react';
+// import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+// import CallsScreen from '../tab-screens/CallsScreen';
+// // import Inventory from '../tab-screens/Meeting';
+// import MessagingStack from '../features/messaging/navigations/MessagingStack';
+// import Meeting from '../tab-screens/Meeting';
+ 
+
+// type TabParamList = {
+//   Conversations: undefined;
+//   Chat: undefined;
+//   Calls: undefined;
+// };
+
+// const Tab = createBottomTabNavigator<TabParamList>();
+
+// const BottomTabNavigator = () => {
+//   return (
+//     <Tab.Navigator>
+//       <Tab.Screen name="Chat" component={MessagingStack} />
+//       <Tab.Screen name="Calls" component={CallsScreen} />
+//       <Tab.Screen name="meeting" component={Meeting} />
+//      </Tab.Navigator>
+//   );
+// };
+
+// export default BottomTabNavigator;
+
+
+ 
+  
+// // screenOptions={({route}) => ({
+// //   headerShown: false,
+// //   tabBarActiveTintColor: '#000000',
+// //   tabBarInactiveTintColor: '#666666',
+// //   tabBarStyle: {
+// //     paddingVertical: 5,
+// //     borderTopLeftRadius: 15,
+// //     borderTopRightRadius: 15,
+// //     backgroundColor: 'white',
+// //     position: 'absolute',
+// //     height: 60,
+// //   },
+// //   tabBarLabelStyle: {
+// //     paddingBottom: 7,
+// //   },
+// // })}
+
+
+
+
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer } from '@react-navigation/native';
-import { FC } from 'react';
-import ConversationList from '../screens/ConversationList';
-import ChatPage from '../screens/ChatPage';
-import CallsScreen from '../screens/CallsScreen';
+import CallsScreen from '../tab-screens/CallsScreen';
+import MessagingStack from '../features/messaging/navigations/MessagingStack';
+import Meeting from '../tab-screens/Meeting';
 
-// Import your screens
-// import ConversationList from '../screens/ConversationList';
-// import ChatPage from '../screens/ChatPage';
-// import CallsScreen from '../screens/CallsScreen';
+const Tab = createBottomTabNavigator();
 
-// Define the type for TabParamList to ensure type safety
-type TabParamList = {
-  Conversations: undefined;
-  Chat: undefined;
-  Calls: undefined;
-};
-
-const Tab = createBottomTabNavigator<TabParamList>();
-
-const BottomTabNavigator: FC = () => {
+const BottomTabNavigator = () => {
   return (
-    <NavigationContainer>
-      <Tab.Navigator>
-        <Tab.Screen name="Conversations" component={ConversationList} />
-        <Tab.Screen name="Chat" component={ChatPage} />
-        <Tab.Screen name="Calls" component={CallsScreen} />
-      </Tab.Navigator>
-    </NavigationContainer>
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: '#000000',
+        tabBarInactiveTintColor: '#666666',
+        tabBarStyle: {
+          paddingVertical: 5,
+          borderTopLeftRadius: 15,
+          borderTopRightRadius: 15,
+          backgroundColor: 'white',
+          height: 60,
+        },
+        tabBarLabelStyle: {
+          paddingBottom: 7,
+        },
+      }}
+    >
+      <Tab.Screen name="Chat" component={MessagingStack} />
+      <Tab.Screen name="Calls" component={CallsScreen} />
+      <Tab.Screen name="meeting" component={Meeting} />
+    </Tab.Navigator>
   );
 };
 
