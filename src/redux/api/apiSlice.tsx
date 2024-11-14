@@ -4,7 +4,8 @@ import { checkTokenAndLogout } from './checkTokenAndLogout';
 const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
-    baseUrl: 'http://192.168.0.112:5000',
+    // baseUrl: 'http://192.168.23.54:5000',
+    baseUrl: 'http://192.168.0.114:5000',
     prepareHeaders: (headers, { getState }) => {
       // Get token from auth state
       const token = (getState() as RootState).auth.token;

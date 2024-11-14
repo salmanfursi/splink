@@ -1,506 +1,397 @@
 
 
+import React, { useState, useCallback, useRef } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { GestureHandlerRootView, PanGestureHandler } from 'react-native-gesture-handler';
+import { format, addDays, isSameDay, parseISO } from 'date-fns';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  runOnJS,
+  withTiming,
+  useAnimatedGestureHandler,
+} from 'react-native-reanimated';
 
-// Meeting.js
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  Modal,
-  TextInput,
-} from 'react-native';
+const CELL_HEIGHT = 80;
+const CELL_WIDTH = 144;
+const SIDEBAR_WIDTH = 96;
+const HEADER_HEIGHT = 60;
 
 const Meeting = () => {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedSlot, setSelectedSlot] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [meetingTitle, setMeetingTitle] = useState('');
-  const [selectedSalesman, setSelectedSalesman] = useState(null);
+  const windowWidth = Dimensions.get('window').width;
+  const windowHeight = Dimensions.get('window').height;
+  
+  // Refs and Animated Values
+  const scrollViewRef = useRef(null);
+  const horizontalScrollRef = useRef(null);
+  
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+  const draggedScale = useSharedValue(1);
+  const isDragging = useSharedValue(false);
+
+  // States
   const [meetings, setMeetings] = useState([
-    {
-      id: 1,
-      title: "Client Meeting",
-      salesmanId: 1,
-      time: "10:00",
-      date: new Date().toDateString()
+    { 
+      id: '1',
+      salesperson: 'John Doe',
+      time: '10:00 - 11:00',
+      date: '2024-11-07',
+      note: 'Client A Meeting',
+      clientName: 'ABC Corp',
+      status: 'confirmed'
     },
     {
-      id: 2,
-      title: "Product Demo",
-      salesmanId: 2,
-      time: "14:00",
-      date: new Date().toDateString()
+      id: '2',
+      salesperson: 'Jane Smith',
+      time: '14:00 - 15:00',
+      date: '2024-11-07',
+      note: 'Client B Meeting',
+      clientName: 'XYZ Ltd',
+      status: 'confirmed'
     }
   ]);
 
+  const [visibleDates, setVisibleDates] = useState(
+    Array.from({ length: 7 }, (_, i) => addDays(new Date(), i))
+  );
+  
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [draggedMeeting, setDraggedMeeting] = useState(null);
+  const [dropTarget, setDropTarget] = useState(null);
+  
   const salesTeam = [
-    { id: 1, name: "John Smith" },
-    { id: 2, name: "Sarah Johnson" },
-    { id: 3, name: "Mike Wilson" }
+    { id: 1, name: 'John Doe', color: '#4CAF50' },
+    { id: 2, name: 'Jane Smith', color: '#2196F3' },
+    { id: 3, name: 'Alice Johnson', color: '#9C27B0' },
   ];
 
-  const timeSlots = Array.from({ length: 10 }, (_, i) => {
-    const hour = i + 10;
-    return `${hour}:00`;
+  const timeSlots = Array.from({ length: 9 }, (_, i) => ({
+    id: i,
+    time: `${10 + i}:00 - ${11 + i}:00`,
+    label: `${10 + i}:00`
+  }));
+
+  // Helper function marked as a worklet
+  const getGridPosition = (x, y) => {
+    'worklet';
+    const dateIndex = Math.floor((x - SIDEBAR_WIDTH) / CELL_WIDTH);
+    const timeIndex = Math.floor((y - HEADER_HEIGHT) / CELL_HEIGHT);
+    const salesIndex = Math.floor(y / CELL_HEIGHT) % salesTeam.length;
+
+    if (dateIndex >= 0 && timeIndex >= 0 && salesIndex >= 0 && dateIndex < visibleDates.length) {
+      return {
+        dateIndex,
+        timeIndex,
+        salesIndex
+      };
+    }
+    return null;
+  };
+
+  // Handle meeting drop as a regular function
+  const handleDrop = useCallback((dateIndex, timeIndex, salesIndex) => {
+    if (draggedMeeting && dateIndex >= 0 && dateIndex < visibleDates.length) {
+      setMeetings(prevMeetings => 
+        prevMeetings.map(m => {
+          if (m.id === draggedMeeting.id) {
+            return {
+              ...m,
+              date: format(visibleDates[dateIndex], 'yyyy-MM-dd'),
+              time: timeSlots[timeIndex].time,
+              salesperson: salesTeam[salesIndex].name
+            };
+          }
+          return m;
+        })
+      );
+    }
+  }, [draggedMeeting, visibleDates, timeSlots, salesTeam]);
+
+  // Gesture handler properly marked as a worklet
+  const gestureHandler = useAnimatedGestureHandler({
+    onStart: (_, context) => {
+      'worklet';
+      context.startX = translateX.value;
+      context.startY = translateY.value;
+      isDragging.value = true;
+      draggedScale.value = withSpring(1.1);
+    },
+    onActive: (event, context) => {
+      'worklet';
+      translateX.value = context.startX + event.translationX;
+      translateY.value = context.startY + event.translationY;
+      
+      const position = getGridPosition(
+        event.absoluteX,
+        event.absoluteY
+      );
+      
+      if (position) {
+        runOnJS(setDropTarget)(position);
+      }
+    },
+    onEnd: (event) => {
+      'worklet';
+      isDragging.value = false;
+      draggedScale.value = withSpring(1);
+      
+      const position = getGridPosition(
+        event.absoluteX,
+        event.absoluteY
+      );
+      
+      if (position) {
+        runOnJS(handleDrop)(
+          position.dateIndex,
+          position.timeIndex,
+          position.salesIndex
+        );
+      }
+      
+      translateX.value = withSpring(0);
+      translateY.value = withSpring(0);
+      
+      runOnJS(setDraggedMeeting)(null);
+      runOnJS(setDropTarget)(null);
+    },
   });
 
-  const handleDateChange = (days) => {
-    const newDate = new Date(currentDate);
-    newDate.setDate(newDate.getDate() + days);
-    setCurrentDate(newDate);
-  };
-
-  const handleSlotPress = (time, salesman) => {
-    setSelectedSlot(time);
-    setSelectedSalesman(salesman);
-    setShowModal(true);
-  };
-
-  const handleAddMeeting = () => {
-    if (meetingTitle.trim() === '') return;
-
-    const newMeeting = {
-      id: meetings.length + 1,
-      title: meetingTitle,
-      salesmanId: selectedSalesman.id,
-      time: selectedSlot,
-      date: currentDate.toDateString()
+  // Animated style for dragged meeting
+  const draggedStyle = useAnimatedStyle(() => {
+    'worklet';
+    return {
+      transform: [
+        { translateX: translateX.value },
+        { translateY: translateY.value },
+        { scale: draggedScale.value }
+      ],
+      zIndex: isDragging.value ? 1000 : 1,
     };
+  });
 
-    setMeetings([...meetings, newMeeting]);
-    setShowModal(false);
-    setMeetingTitle('');
-    setSelectedSlot(null);
-    setSelectedSalesman(null);
-  };
-
-  const renderMeetings = (time, salesman) => {
-    return meetings.filter(
-      m => m.salesmanId === salesman.id && 
-      m.time === time && 
-      m.date === currentDate.toDateString()
-    ).map(meeting => (
-      <TouchableOpacity
-        key={meeting.id}
-        className="bg-blue-500 p-2 rounded-md mb-1"
-        onLongPress={() => {
-          // Handle meeting edit/delete
-        }}
-      >
-        <Text className="text-white font-medium text-sm">{meeting.title}</Text>
-      </TouchableOpacity>
-    ));
-  };
-
-  return (
-    <View className="flex-1 bg-white">
-      {/* Header */}
-      <View className="p-4 bg-gray-50 border-b border-gray-200">
-        <Text className="text-xl font-bold text-gray-800">Meeting Schedule</Text>
-      </View>
-
-      {/* Date Navigation */}
-      <View className="flex-row justify-between items-center p-4 bg-white">
-        <TouchableOpacity 
-          onPress={() => handleDateChange(-1)}
-          className="p-2"
-        >
-          <Text className="text-2xl text-blue-500">←</Text>
-        </TouchableOpacity>
-        <Text className="text-base font-medium text-gray-700">
-          {currentDate.toLocaleDateString('en-US', {
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric'
-          })}
-        </Text>
-        <TouchableOpacity 
-          onPress={() => handleDateChange(1)}
-          className="p-2"
-        >
-          <Text className="text-2xl text-blue-500">→</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Salesman Tabs */}
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        className="border-b border-gray-200"
-      >
-        {salesTeam.map(salesman => (
+  // Render meeting card
+  const MeetingCard = ({ meeting, onDragStart }) => {
+    const salesperson = salesTeam.find(s => s.name === meeting.salesperson);
+    
+    return (
+      <PanGestureHandler onGestureEvent={gestureHandler}>
+        <Animated.View style={[
+          draggedMeeting?.id === meeting.id && draggedStyle
+        ]}>
           <TouchableOpacity
-            key={salesman.id}
-            className={`p-3 mx-1 rounded-lg ${
-              selectedSalesman?.id === salesman.id 
-                ? 'bg-blue-100' 
-                : 'bg-transparent'
-            }`}
-            onPress={() => setSelectedSalesman(salesman)}
+            onPressIn={() => onDragStart(meeting)}
+            style={[
+              {
+                backgroundColor: salesperson?.color + '20',
+                borderRadius: 8,
+                padding: 8,
+                margin: 4,
+              }
+            ]}
           >
-            <Text className={`${
-              selectedSalesman?.id === salesman.id
-                ? 'text-blue-700'
-                : 'text-gray-700'
-            } font-medium`}>
-              {salesman.name}
+            <Text style={{ 
+              color: salesperson?.color,
+              fontWeight: '500',
+              fontSize: 14
+            }}>
+              {meeting.clientName}
+            </Text>
+            <Text style={{
+              fontSize: 12,
+              color: '#666'
+            }}>
+              {meeting.note}
             </Text>
           </TouchableOpacity>
-        ))}
-      </ScrollView>
+        </Animated.View>
+      </PanGestureHandler>
+    );
+  };
 
-      {/* Schedule Grid */}
-      <ScrollView className="flex-1">
-        {timeSlots.map(time => (
-          <View key={time} className="flex-row p-3 border-b border-gray-100">
-            <Text className="w-16 text-sm text-gray-600">{time}</Text>
-            <View className="flex-1">
-              {selectedSalesman ? (
-                <TouchableOpacity
-                  className="flex-1 min-h-[50px] rounded-lg bg-gray-50 p-2"
-                  onPress={() => handleSlotPress(time, selectedSalesman)}
-                >
-                  {renderMeetings(time, selectedSalesman)}
-                </TouchableOpacity>
-              ) : (
-                <Text className="text-gray-500 text-center p-2">
-                  Select a salesman
-                </Text>
-              )}
+  // Render time grid
+  const TimeGrid = () => (
+    <ScrollView
+      ref={horizontalScrollRef}
+      horizontal
+      showsHorizontalScrollIndicator={false}
+    >
+      <View style={{ flexDirection: 'row' }}>
+        {/* Sidebar with sales team */}
+        <View style={{ width: SIDEBAR_WIDTH, backgroundColor: '#f9fafb' }}>
+          {salesTeam.map(person => (
+            <View
+              key={person.id}
+              style={{
+                height: CELL_HEIGHT,
+                padding: 8,
+                justifyContent: 'center',
+                borderBottomWidth: 1,
+                borderBottomColor: '#e5e7eb'
+              }}
+            >
+              <Text style={{
+                fontSize: 14,
+                fontWeight: '500',
+                color: '#374151',
+                textAlign: 'center'
+              }}>
+                {person.name}
+              </Text>
             </View>
+          ))}
+        </View>
+
+        {/* Time slots grid */}
+        {visibleDates.map((date, dateIndex) => (
+          <View key={format(date, 'yyyy-MM-dd')} style={{ width: CELL_WIDTH }}>
+            {timeSlots.map((slot, timeIndex) => (
+              <View key={slot.id}>
+                {salesTeam.map((person, salesIndex) => (
+                  <View
+                    key={`${date}-${slot.id}-${person.id}`}
+                    style={{
+                      height: CELL_HEIGHT,
+                      borderBottomWidth: 1,
+                      borderLeftWidth: 1,
+                      borderColor: '#e5e7eb'
+                    }}
+                  >
+                    {meetings
+                      .filter(m => 
+                        m.salesperson === person.name &&
+                        m.time === slot.time &&
+                        isSameDay(parseISO(m.date), date)
+                      )
+                      .map(meeting => (
+                        <MeetingCard
+                          key={meeting.id}
+                          meeting={meeting}
+                          onDragStart={setDraggedMeeting}
+                        />
+                      ))
+                    }
+                    
+                    {dropTarget &&
+                      dropTarget.dateIndex === dateIndex &&
+                      dropTarget.timeIndex === timeIndex &&
+                      dropTarget.salesIndex === salesIndex && (
+                        <View
+                          style={{
+                            position: 'absolute',
+                            inset: 4,
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 2,
+                            borderColor: '#60a5fa',
+                            borderRadius: 8
+                          }}
+                        />
+                      )}
+                  </View>
+                ))}
+              </View>
+            ))}
+          </View>
+        ))}
+      </View>
+    </ScrollView>
+  );
+
+  // Header with dates
+  const Header = () => (
+    <View style={{
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 16,
+      backgroundColor: 'white',
+      borderBottomWidth: 1,
+      borderBottomColor: '#e5e7eb'
+    }}>
+      <View style={{ width: SIDEBAR_WIDTH }} />
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        {visibleDates.map((date, index) => (
+          <View
+            key={index}
+            style={{ width: CELL_WIDTH, paddingHorizontal: 8 }}
+          >
+            <Text style={{
+              fontSize: 14,
+              fontWeight: '500',
+              color: '#1f2937'
+            }}>
+              {format(date, 'EEE d')}
+            </Text>
           </View>
         ))}
       </ScrollView>
+    </View>
+  );
 
-      {/* Add Meeting Modal */}
-      <Modal
-        visible={showModal}
-        transparent
-        animationType="slide"
-      >
-        <View className="flex-1 justify-end bg-black/50">
-          <View className="bg-white p-5 rounded-t-3xl">
-            <Text className="text-xl font-bold text-gray-800 mb-2">
-              Add Meeting
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <View style={{ flex: 1, backgroundColor: 'white' }}>
+        <View style={{
+          padding: 16,
+          backgroundColor: 'white',
+          borderBottomWidth: 1,
+          borderBottomColor: '#e5e7eb'
+        }}>
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <Text style={{
+              fontSize: 20,
+              fontWeight: 'bold',
+              color: '#1f2937'
+            }}>
+              Meeting Scheduler
             </Text>
-            <Text className="text-base text-gray-600 mb-4">
-              {selectedSalesman?.name} - {selectedSlot}
-            </Text>
-            <TextInput
-              className="border border-gray-200 rounded-lg p-3 mb-4 text-gray-800"
-              placeholder="Meeting Title"
-              placeholderTextColor="#9CA3AF"
-              value={meetingTitle}
-              onChangeText={setMeetingTitle}
-            />
-            <View className="flex-row justify-end gap-3">
-              <TouchableOpacity 
-                className="px-4 py-3 rounded-lg bg-gray-200"
-                onPress={() => setShowModal(false)}
-              >
-                <Text className="text-gray-800 font-medium">Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                className="px-4 py-3 rounded-lg bg-blue-500"
-                onPress={handleAddMeeting}
-              >
-                <Text className="text-white font-medium">Add</Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              onPress={() => setShowDatePicker(true)}
+              style={{
+                paddingHorizontal: 16,
+                paddingVertical: 8,
+                backgroundColor: '#eff6ff',
+                borderRadius: 8
+              }}
+            >
+              <Text style={{
+                color: '#2563eb',
+                fontWeight: '500'
+              }}>
+                {format(selectedDate, 'MMM d, yyyy')}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
-      </Modal>
-    </View>
+
+        <Header />
+        <TimeGrid />
+
+        {showDatePicker && (
+          <DateTimePicker
+            value={selectedDate}
+            mode="date"
+            display="default"
+            onChange={(_, date) => {
+              setShowDatePicker(false);
+              if (date) {
+                setSelectedDate(date);
+                setVisibleDates(
+                  Array.from({ length: 7 }, (_, i) => addDays(date, i))
+                );
+              }
+            }}
+          />
+        )}
+      </View>
+    </GestureHandlerRootView>
   );
 };
 
 export default Meeting;
-
-
-
-
-
-
-
-
-
-
-// // Meeting.js
-// import React, { useState } from 'react';
-// import {
-//   View,
-//   Text,
-//   TouchableOpacity,
-//   ScrollView,
-//   Modal,
-//   TextInput,
-// } from 'react-native';
-// import {
-//   CalendarDaysIcon,
-//   ChevronLeftIcon,
-//   ChevronRightIcon,
-//   ClockIcon,
-//   UserGroupIcon,
-//   PlusCircleIcon,
-//   XMarkIcon,
-//   CheckIcon,
-//   PencilSquareIcon,
-//   TrashIcon,
-// } from "react-native-heroicons/outline";
-
-// const Meeting = () => {
-//   const [currentDate, setCurrentDate] = useState(new Date());
-//   const [selectedSlot, setSelectedSlot] = useState(null);
-//   const [showModal, setShowModal] = useState(false);
-//   const [meetingTitle, setMeetingTitle] = useState('');
-//   const [selectedSalesman, setSelectedSalesman] = useState(null);
-//   const [meetings, setMeetings] = useState([
-//     {
-//       id: 1,
-//       title: "Client Meeting",
-//       salesmanId: 1,
-//       time: "10:00",
-//       date: new Date().toDateString()
-//     },
-//     {
-//       id: 2,
-//       title: "Product Demo",
-//       salesmanId: 2,
-//       time: "14:00",
-//       date: new Date().toDateString()
-//     }
-//   ]);
-
-//   const salesTeam = [
-//     { id: 1, name: "John Smith" },
-//     { id: 2, name: "Sarah Johnson" },
-//     { id: 3, name: "Mike Wilson" }
-//   ];
-
-//   const timeSlots = Array.from({ length: 10 }, (_, i) => {
-//     const hour = i + 10;
-//     return `${hour}:00`;
-//   });
-
-//   const handleDateChange = (days) => {
-//     const newDate = new Date(currentDate);
-//     newDate.setDate(newDate.getDate() + days);
-//     setCurrentDate(newDate);
-//   };
-
-//   const handleSlotPress = (time, salesman) => {
-//     setSelectedSlot(time);
-//     setSelectedSalesman(salesman);
-//     setShowModal(true);
-//   };
-
-//   const handleAddMeeting = () => {
-//     if (meetingTitle.trim() === '') return;
-
-//     const newMeeting = {
-//       id: meetings.length + 1,
-//       title: meetingTitle,
-//       salesmanId: selectedSalesman.id,
-//       time: selectedSlot,
-//       date: currentDate.toDateString()
-//     };
-
-//     setMeetings([...meetings, newMeeting]);
-//     setShowModal(false);
-//     setMeetingTitle('');
-//     setSelectedSlot(null);
-//     setSelectedSalesman(null);
-//   };
-
-//   const renderMeetings = (time, salesman) => {
-//     return meetings.filter(
-//       m => m.salesmanId === salesman.id && 
-//       m.time === time && 
-//       m.date === currentDate.toDateString()
-//     ).map(meeting => (
-//       <View key={meeting.id} className="bg-blue-500 p-2 rounded-md mb-1">
-//         <View className="flex-row justify-between items-center">
-//           <Text className="text-white font-medium text-sm flex-1">
-//             {meeting.title}
-//           </Text>
-//           <View className="flex-row gap-2">
-//             <TouchableOpacity>
-//               <PencilSquareIcon size={16} color="white" />
-//             </TouchableOpacity>
-//             <TouchableOpacity>
-//               <TrashIcon size={16} color="white" />
-//             </TouchableOpacity>
-//           </View>
-//         </View>
-//       </View>
-//     ));
-//   };
-
-//   return (
-//     <View className="flex-1 bg-white">
-//       {/* Header */}
-//       <View className="p-4 bg-gray-50 border-b border-gray-200">
-//         <View className="flex-row items-center">
-//           <CalendarDaysIcon size={24} color="#1F2937" />
-//           <Text className="text-xl font-bold text-gray-800 ml-2">
-//             Meeting Schedule
-//           </Text>
-//         </View>
-//       </View>
-
-//       {/* Date Navigation */}
-//       <View className="flex-row justify-between items-center p-4 bg-white">
-//         <TouchableOpacity 
-//           onPress={() => handleDateChange(-1)}
-//           className="p-2"
-//         >
-//           <ChevronLeftIcon size={24} color="#3B82F6" />
-//         </TouchableOpacity>
-//         <View className="flex-row items-center">
-//           <Text className="text-base font-medium text-gray-700">
-//             {currentDate.toLocaleDateString('en-US', {
-//               weekday: 'short',
-//               month: 'short',
-//               day: 'numeric'
-//             })}
-//           </Text>
-//         </View>
-//         <TouchableOpacity 
-//           onPress={() => handleDateChange(1)}
-//           className="p-2"
-//         >
-//           <ChevronRightIcon size={24} color="#3B82F6" />
-//         </TouchableOpacity>
-//       </View>
-
-//       {/* Salesman Tabs */}
-//       <ScrollView 
-//         horizontal 
-//         showsHorizontalScrollIndicator={false}
-//         className="border-b border-gray-200"
-//       >
-//         {salesTeam.map(salesman => (
-//           <TouchableOpacity
-//             key={salesman.id}
-//             className={`p-3 mx-1 rounded-lg flex-row items-center ${
-//               selectedSalesman?.id === salesman.id 
-//                 ? 'bg-blue-100' 
-//                 : 'bg-transparent'
-//             }`}
-//             onPress={() => setSelectedSalesman(salesman)}
-//           >
-//             <UserGroupIcon 
-//               size={16} 
-//               color={selectedSalesman?.id === salesman.id ? '#1D4ED8' : '#6B7280'} 
-//             />
-//             <Text className={`ml-2 ${
-//               selectedSalesman?.id === salesman.id
-//                 ? 'text-blue-700'
-//                 : 'text-gray-700'
-//             } font-medium`}>
-//               {salesman.name}
-//             </Text>
-//           </TouchableOpacity>
-//         ))}
-//       </ScrollView>
-
-//       {/* Schedule Grid */}
-//       <ScrollView className="flex-1">
-//         {timeSlots.map(time => (
-//           <View key={time} className="flex-row p-3 border-b border-gray-100">
-//             <View className="w-16 flex-row items-center">
-//               <ClockIcon size={14} color="#6B7280" />
-//               <Text className="text-sm text-gray-600 ml-1">{time}</Text>
-//             </View>
-//             <View className="flex-1">
-//               {selectedSalesman ? (
-//                 <TouchableOpacity
-//                   className="flex-1 min-h-[50px] rounded-lg bg-gray-50 p-2"
-//                   onPress={() => handleSlotPress(time, selectedSalesman)}
-//                 >
-//                   {renderMeetings(time, selectedSalesman)}
-//                   {meetings.filter(m => 
-//                     m.salesmanId === selectedSalesman.id && 
-//                     m.time === time && 
-//                     m.date === currentDate.toDateString()
-//                   ).length === 0 && (
-//                     <View className="items-center justify-center h-full">
-//                       <PlusCircleIcon size={20} color="#9CA3AF" />
-//                     </View>
-//                   )}
-//                 </TouchableOpacity>
-//               ) : (
-//                 <View className="flex-row justify-center items-center p-2">
-//                   <UserGroupIcon size={16} color="#9CA3AF" />
-//                   <Text className="text-gray-500 ml-2">
-//                     Select a salesman
-//                   </Text>
-//                 </View>
-//               )}
-//             </View>
-//           </View>
-//         ))}
-//       </ScrollView>
-
-//       {/* Add Meeting Modal */}
-//       <Modal
-//         visible={showModal}
-//         transparent
-//         animationType="slide"
-//       >
-//         <View className="flex-1 justify-end bg-black/50">
-//           <View className="bg-white p-5 rounded-t-3xl">
-//             <View className="flex-row justify-between items-center mb-4">
-//               <Text className="text-xl font-bold text-gray-800">
-//                 Add Meeting
-//               </Text>
-//               <TouchableOpacity 
-//                 onPress={() => setShowModal(false)}
-//                 className="p-1"
-//               >
-//                 <XMarkIcon size={24} color="#6B7280" />
-//               </TouchableOpacity>
-//             </View>
-//             <View className="flex-row items-center mb-4">
-//               <UserGroupIcon size={16} color="#6B7280" />
-//               <Text className="text-base text-gray-600 ml-2">
-//                 {selectedSalesman?.name}
-//               </Text>
-//               <ClockIcon size={16} color="#6B7280" className="ml-4" />
-//               <Text className="text-base text-gray-600 ml-2">
-//                 {selectedSlot}
-//               </Text>
-//             </View>
-//             <TextInput
-//               className="border border-gray-200 rounded-lg p-3 mb-4 text-gray-800"
-//               placeholder="Meeting Title"
-//               placeholderTextColor="#9CA3AF"
-//               value={meetingTitle}
-//               onChangeText={setMeetingTitle}
-//             />
-//             <View className="flex-row justify-end gap-3">
-//               <TouchableOpacity 
-//                 className="px-4 py-3 rounded-lg bg-gray-200 flex-row items-center"
-//                 onPress={() => setShowModal(false)}
-//               >
-//                 <XMarkIcon size={20} color="#374151" />
-//                 <Text className="text-gray-800 font-medium ml-2">Cancel</Text>
-//               </TouchableOpacity>
-//               <TouchableOpacity 
-//                 className="px-4 py-3 rounded-lg bg-blue-500 flex-row items-center"
-//                 onPress={handleAddMeeting}
-//               >
-//                 <CheckIcon size={20} color="white" />
-//                 <Text className="text-white font-medium ml-2">Add</Text>
-//               </TouchableOpacity>
-//             </View>
-//           </View>
-//         </View>
-//       </Modal>
-//     </View>
-//   );
-// };
-
-// export default Meeting

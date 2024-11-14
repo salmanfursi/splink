@@ -20,9 +20,10 @@ const LoginScreen=({ navigation })=> {
     try {
       // Log email and password
       console.log('Login attempt:', { email, password })
-
+      
       const { user, token } = await loginUser({ email, password }).unwrap()
       dispatch(setUser({ user, token }))
+      console.log('user, token,', { user, token })
       navigation.replace('Main')
     } catch (err) {
       console.error('Login error', err)
