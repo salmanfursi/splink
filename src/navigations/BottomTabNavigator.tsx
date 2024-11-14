@@ -77,7 +77,7 @@ const BottomTabNavigator = () => {
       }}
     >
       <Tab.Screen name="Chat" component={MessagingStack} />
-      <Tab.Screen name="Calls" component={CallsScreen} />
+      <Tab.Screen name="Calls"   component={CallsScreen} />
       <Tab.Screen name="meeting" component={Meeting} />
     </Tab.Navigator>
   );
