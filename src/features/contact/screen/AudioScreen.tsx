@@ -15,7 +15,7 @@ const AudioScreen = () => {
 
 // import React, { useState } from 'react';
 // import { View, Text, FlatList, TouchableOpacity } from 'react-native';
-// import { Play, Pause, Mic, Square } from 'lucide-react-native';
+// import Icon from 'react-native-vector-icons/MaterialIcons'; // Or any other available icon set
 
 // const audioMessages = [
 //   { id: '1', sender: 'John', duration: '0:30', timestamp: '10:30 AM' },
