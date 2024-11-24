@@ -77,16 +77,14 @@ const BottomTabNavigator = () => {
           tabBarIcon: ({ focused, size }) => {
             let iconName;
 
-            if (route.name === 'chat') {
+            if (route.name === 'Chat') {
               iconName = 'home';
             } else if (route.name === 'Calls') {
-              iconName = focused ? 'person' : 'person-outline';
+              iconName = 'person' ;
             } else if (route.name === 'meeting') {
-              iconName = focused ? 'settings' : 'settings-outline';
+              iconName = 'event' ;
             }
-
-            // Return the icon component
-            return<Text className=' text-black'><Icon name={iconName} size={size || 24} color='#8888' className='border' /></Text>
+            return<Text className={`text-${focused ? "blue-400" : "black"}`}><Icon name={iconName} size={size || 24} /></Text>
           },
           tabBarActiveTintColor: 'blue',
           tabBarInactiveTintColor: 'gray',

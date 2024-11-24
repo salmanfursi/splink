@@ -1,153 +1,266 @@
-// import React from "react";
-// import { View, Text, FlatList } from "react-native";
-// import { styled } from "nativewind";
+import React, { useCallback, useMemo, useState, useRef } from "react";
+import { View, Text, ScrollView, Platform, Dimensions } from "react-native";
+import { styled } from "nativewind";
+import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 
-// const timeslots = ["11:00 AM", "2:00 PM", "4:00 PM", "6:00 PM"];
-// const rows = Array.from({ length: 50 }, (_, i) => i + 1); // For 50 rows example
+// Styled components
+const StyledView = styled(View);
+const StyledText = styled(Text);
+const StyledScrollView = styled(ScrollView);
 
-// const StyledView = styled(View);
-// const StyledText = styled(Text);
+// Constants
+const CELL_WIDTH = 120;
+const CELL_HEIGHT = 64;
+const HEADER_HEIGHT = 64;
 
-// export default function Scheduler() {
-//   const renderCell = (time, rowIndex) => (
-//     <StyledView className="flex-1 h-12 border border-gray-700 justify-center items-center" key={`${time}-${rowIndex}`}>
-//       {/* Meeting details can go here */}
-//       <StyledText className="text-white"></StyledText>
-//     </StyledView>
-//   );
+const TimeSlots = {
+  START: 10,
+  END: 18,
+  FORMAT: "h:mm A",
+};
 
-//   const renderRow = ({ item: rowIndex }) => (
-//     <StyledView className="flex-row" key={rowIndex}>
-//       {timeslots.map((time) => renderCell(time, rowIndex))}
-//     </StyledView>
-//   );
+// Types
+interface Meeting {
+  id: string;
+  title: string;
+  time: string;
+  attendees: string[];
+  teamMemberIndex: number;
+  timeSlotIndex: number;
+}
 
-//   return (
-//     <StyledView className="flex-1 bg-black">
-//       {/* Header Row */}
-//       <StyledView className="flex-row bg-gray-800">
-//         {timeslots.map((time) => (
-//           <StyledView className="flex-1 p-3 border-b border-gray-600" key={time}>
-//             <StyledText className="text-white font-bold text-center">{time}</StyledText>
-//           </StyledView>
-//         ))}
-//       </StyledView>
+// Helper functions
+const generateTimeSlots = () => {
+  const slots = [];
+  for (let hour = TimeSlots.START; hour <= TimeSlots.END; hour++) {
+    slots.push(
+      new Date(new Date().setHours(hour, 0, 0, 0)).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+      })
+    );
+  }
+  return slots;
+};
 
-//       {/* Content Rows */}
-//       <FlatList
-//         data={rows}
-//         renderItem={renderRow}
-//         keyExtractor={(item) => item.toString()}
-//       />
-//     </StyledView>
-//   );
-// }
+const generateMockMeetings = (salesTeam: string[], timeSlots: string[]): Meeting[] => {
+  return salesTeam.flatMap((member, teamIndex) => 
+    Array(Math.floor(Math.random() * 3)).fill(null).map((_, i) => {
+      const timeSlotIndex = Math.floor(Math.random() * timeSlots.length);
+      return {
+        id: `${teamIndex}-${i}`,
+        title: `Meeting ${teamIndex}-${i}`,
+        time: timeSlots[timeSlotIndex],
+        attendees: [member, salesTeam[Math.floor(Math.random() * salesTeam.length)]],
+        teamMemberIndex: teamIndex,
+        timeSlotIndex: timeSlotIndex,
+      };
+    })
+  );
+};
 
-// import React from 'react';
-// import {View, Text, ScrollView, FlatList} from 'react-native';
-// import {styled} from 'nativewind';
-// import Icon from 'react-native-vector-icons/FontAwesome';
-
-// // Define your data
-// const timeslots = ['11:00 AM', '2:00 PM', '4:00 PM', '6:00 PM']; // Example time slots
-// const salesTeams = ['Salman', 'Kawser', 'Mehnaj', 'Faruk', 'Mamon', 'Yeasin']; // Example sales team names
-// const rows = Array.from({length: salesTeams.length}, (_, i) => i); // Rows based on sales team count
-
-// const StyledView = styled(View);
-// const StyledText = styled(Text);
-
-// export default function Scheduler() {
-//   const renderCell = (time, rowIndex) => (
-//     <StyledView
-//       className="w-24 h-12 border border-gray-700 justify-center items-center"
-//       key={`${time}-${rowIndex}`}>
-//       {/* Meeting details can go here */}
-//       <StyledText className="text-white"></StyledText>
-//     </StyledView>
-//   );
-
-//   const renderRow = ({item: rowIndex}) => (
-//     <StyledView className="flex-row" key={rowIndex}>
-//       {timeslots.map(time => renderCell(time, rowIndex))}
-//     </StyledView>
-//   );
-
-//   return (
-//     <StyledView className="flex-1 bg-black">
-//       {/* Main container with horizontal scroll for the time slots */}
-//       <ScrollView horizontal={true} bounces={false}>
-//         <StyledView className="flex-row">
-//           {/* Sales Team Column (Fixed Left Side) */}
-//           <StyledView>
-//             <StyledView className="w-24 h-12 bg-gray-800 border-b border-gray-600 justify-center items-center">
-//               <StyledText className="text-white font-bold text-center">
-//                 Sales Team
-//               </StyledText>
-//             </StyledView>
-//             {salesTeams.map((team, index) => (
-//               <StyledView
-//                 className="w-24 h-12 border border-gray-700 justify-center items-center bg-gray-900"
-//                 key={index}>
-//                 <StyledText className="text-white font-bold text-center">
-//                   {team}
-//                 </StyledText>
-//               </StyledView>
-//             ))}
-//           </StyledView>
-
-//           {/* Time Slots Header */}
-//           <StyledView className="flex-1">
-//             <StyledView className="flex-row bg-gray-800">
-//               {timeslots.map(time => (
-//                 <StyledView
-//                   className="w-24 h-12 border-b border-gray-600 justify-center items-center"
-//                   key={time}>
-//                   <StyledText className="text-white font-bold text-center">
-//                     {time}
-//                   </StyledText>
-//                 </StyledView>
-//               ))}
-//             </StyledView>
-
-//             {/* Scrollable Rows for Meetings */}
-//             <ScrollView bounces={false}>
-//               <FlatList
-//                 data={rows}
-//                 renderItem={renderRow}
-//                 keyExtractor={item => item.toString()}
-//                 scrollEnabled={false} // Disable internal scrolling of FlatList
-//               />
-//             </ScrollView>
-//             <View>
-//               <Icon name="rocket" size={30} color="#900" />;
-//             </View>
-//           </StyledView>
-//         </StyledView>
-//       </ScrollView>
-//     </StyledView>
-//   );
-// }
-
-import React from 'react';
-import {Text, View} from 'react-native';
-
-import Icon from 'react-native-vector-icons/MaterialIcons';
-
-const Meeting = () => {
-  console.log('icon is hare ----->', Icon);
+// MeetingCard component
+const MeetingCard: React.FC<RenderItemParams<Meeting>> = ({ item, drag, isActive }) => {
   return (
-    <View className="w-72 mx-auto items-center mt-12 bg-blue-600 border rounded-lg p-4">
-      <Text className="text-white text-6xl    text-center    ">Meeting</Text>
-      <Text>
-        <Icon name="home" size={30} color="#ffff" />
-        <Icon
-          name="format-shapes"
-          size={30}
-          color="#ffff"
-        />
-      </Text>
-    </View>
+    <ScaleDecorator>
+      <StyledView
+        className={`absolute p-2 rounded-lg shadow ${isActive ? 'bg-blue-200 z-10' : 'bg-blue-100'}`}
+        style={{
+          width: CELL_WIDTH - 4,
+          height: CELL_HEIGHT - 4,
+          left: item.timeSlotIndex * CELL_WIDTH,
+          top: item.teamMemberIndex * CELL_HEIGHT,
+        }}
+        onLongPress={drag}
+      >
+        <StyledText className="font-bold text-xs text-blue-700" numberOfLines={1}>{item.title}</StyledText>
+        <StyledText className="text-xs text-blue-500">{item.time}</StyledText>
+        <StyledText className="text-xs text-blue-400" numberOfLines={1}>{item.attendees.join(', ')}</StyledText>
+      </StyledView>
+    </ScaleDecorator>
+  );
+};
+
+// Main Meeting component
+const Meeting: React.FC = () => {
+  // Refs for scroll views
+  const mainVerticalScrollRef = useRef(null);
+  const mainHorizontalScrollRef = useRef(null);
+  const syncVerticalScrollRef = useRef(null);
+  const syncHorizontalScrollRef = useRef(null);
+
+  // Memoized data
+  const timeSlots = useMemo(() => generateTimeSlots(), []);
+  const salesTeam = useMemo(() => [
+    "Supto", "Nyim", "Sahmak", "Tom", "Mon", "Toli", "Boli",
+    "dfdf", "djj", "ygvd", "jhneds", "yhse", "cannol", "plant", "delew"
+  ], []);
+
+  // State for meetings
+  const [meetings, setMeetings] = useState(() => generateMockMeetings(salesTeam, timeSlots));
+
+  // Optimized scroll handlers using useCallback
+  const handleVerticalScroll = useCallback(({ nativeEvent }) => {
+    const offsetY = nativeEvent.contentOffset.y;
+    if (mainVerticalScrollRef.current && syncVerticalScrollRef.current) {
+      Platform.OS === 'ios' 
+        ? requestAnimationFrame(() => {
+            mainVerticalScrollRef.current?.scrollTo({ y: offsetY, animated: false });
+            syncVerticalScrollRef.current?.scrollTo({ y: offsetY, animated: false });
+          })
+        : setTimeout(() => {
+            mainVerticalScrollRef.current?.scrollTo({ y: offsetY, animated: false });
+            syncVerticalScrollRef.current?.scrollTo({ y: offsetY, animated: false });
+          }, 0);
+    }
+  }, []);
+
+  const handleHorizontalScroll = useCallback(({ nativeEvent }) => {
+    const offsetX = nativeEvent.contentOffset.x;
+    if (mainHorizontalScrollRef.current && syncHorizontalScrollRef.current) {
+      Platform.OS === 'ios'
+        ? requestAnimationFrame(() => {
+            mainHorizontalScrollRef.current?.scrollTo({ x: offsetX, animated: false });
+            syncHorizontalScrollRef.current?.scrollTo({ x: offsetX, animated: false });
+          })
+        : setTimeout(() => {
+            mainHorizontalScrollRef.current?.scrollTo({ x: offsetX, animated: false });
+            syncHorizontalScrollRef.current?.scrollTo({ x: offsetX, animated: false });
+          }, 0);
+    }
+  }, []);
+
+  // Memoized cell renderers
+  const renderTimeSlotCell = useCallback((time: string, index: number) => (
+    <StyledView
+      key={index}
+      className="justify-center items-center border-r border-blue-300 bg-blue-100"
+      style={{ width: CELL_WIDTH, height: HEADER_HEIGHT }}
+    >
+      <StyledText className="font-bold text-blue-700">{time}</StyledText>
+    </StyledView>
+  ), []);
+
+  const renderTeamMemberCell = useCallback((member: string, index: number) => (
+    <StyledView
+      key={index}
+      className="justify-center items-center border-b border-blue-300 bg-blue-100"
+      style={{ height: CELL_HEIGHT }}
+    >
+      <StyledText
+        className="text-sm text-center text-blue-700"
+        style={{ width: CELL_WIDTH }}
+        numberOfLines={1}
+        ellipsizeMode="tail"
+      >
+        {member}
+      </StyledText>
+    </StyledView>
+  ), []);
+
+  const renderGridCell = useCallback((rowIndex: number, colIndex: number) => (
+    <StyledView
+      key={`${rowIndex}-${colIndex}`}
+      className="border-r border-b border-blue-300 bg-blue-50"
+      style={{ width: CELL_WIDTH, height: CELL_HEIGHT }}
+    />
+  ), []);
+
+  const onDragEnd = useCallback(({ data, from, to }) => {
+    const updatedMeetings = [...data];
+    const movedMeeting = updatedMeetings[to];
+    
+    // Calculate new position
+    const newTimeSlotIndex = Math.floor(to % timeSlots.length);
+    const newTeamMemberIndex = Math.floor(to / timeSlots.length);
+
+    // Update the moved meeting
+    movedMeeting.timeSlotIndex = newTimeSlotIndex;
+    movedMeeting.teamMemberIndex = newTeamMemberIndex;
+    movedMeeting.time = timeSlots[newTimeSlotIndex];
+
+    setMeetings(updatedMeetings);
+  }, [timeSlots]);
+
+  return (
+    <StyledView className="flex-1 bg-blue-200">
+      {/* Header Row */}
+      <StyledView className="flex-row">
+        {/* Static Sales Team Header */}
+        <StyledView 
+          className="justify-center items-center border-b border-r border-blue-300 bg-blue-200"
+          style={{ height: HEADER_HEIGHT, width: 90 }}
+        >
+          <StyledText className="font-bold text-blue-700">Sales Team</StyledText>
+        </StyledView>
+
+        {/* Scrollable Time Slots Header */}
+        <StyledScrollView
+          horizontal
+          ref={mainHorizontalScrollRef}
+          onScroll={handleHorizontalScroll}
+          scrollEventThrottle={16}
+          showsHorizontalScrollIndicator={false}
+          className="border-b border-blue-300 bg-blue-200"
+          removeClippedSubviews={Platform.OS === 'android'}
+        >
+          <StyledView className="flex-row">
+            {timeSlots.map(renderTimeSlotCell)}
+          </StyledView>
+        </StyledScrollView>
+      </StyledView>
+
+      {/* Main Content Area */}
+      <StyledView className="flex-1 flex-row">
+        {/* Sales Team Column */}
+        <StyledScrollView
+          ref={mainVerticalScrollRef}
+          onScroll={handleVerticalScroll}
+          scrollEventThrottle={16}
+          showsVerticalScrollIndicator={false}
+          className="border-r border-blue-300 bg-blue-100"
+          removeClippedSubviews={Platform.OS === 'android'}
+        >
+          {salesTeam.map(renderTeamMemberCell)}
+        </StyledScrollView>
+
+        {/* Meeting Grid */}
+        <StyledScrollView
+          ref={syncHorizontalScrollRef}
+          horizontal
+          onScroll={handleHorizontalScroll}
+          scrollEventThrottle={16}
+          showsHorizontalScrollIndicator={false}
+          removeClippedSubviews={Platform.OS === 'android'}
+        >
+          <StyledScrollView
+            ref={syncVerticalScrollRef}
+            onScroll={handleVerticalScroll}
+            scrollEventThrottle={16}
+            showsVerticalScrollIndicator={false}
+            removeClippedSubviews={Platform.OS === 'android'}
+          >
+            <StyledView className="bg-blue-50" style={{ width: CELL_WIDTH * timeSlots.length, height: CELL_HEIGHT * salesTeam.length }}>
+              {salesTeam.map((_, rowIndex) => (
+                <StyledView key={rowIndex} className="flex-row">
+                  {timeSlots.map((_, colIndex) => renderGridCell(rowIndex, colIndex))}
+                </StyledView>
+              ))}
+              <DraggableFlatList
+                data={meetings}
+                onDragEnd={onDragEnd}
+                keyExtractor={(item) => item.id}
+                renderItem={MeetingCard}
+                containerStyle={{ width: CELL_WIDTH * timeSlots.length, height: CELL_HEIGHT * salesTeam.length }}
+                activationDistance={10}
+              />
+            </StyledView>
+          </StyledScrollView>
+        </StyledScrollView>
+      </StyledView>
+    </StyledView>
   );
 };
 
 export default Meeting;
+

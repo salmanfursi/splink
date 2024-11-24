@@ -231,7 +231,7 @@ const Calling=()=> {
               bottomSheetRef.current?.expand();
             }}
           >
-            <MessageCircle size={20} color="#fff" />
+            {/* <MessageCircle size={20} color="#fff" /> */}
             <Text className="text-white ml-2">Meeting</Text>
           </TouchableOpacity>
         </View>
@@ -283,7 +283,7 @@ const Calling=()=> {
                 onPress={handlePrevious}
                 disabled={step === 1}
               >
-                <ArrowLeft size={20} color="#fff" />
+                {/* <ArrowLeft size={20} color="#fff" /> */}
                 <Text className="text-white font-bold ml-2">Previous</Text>
               </TouchableOpacity>
               {step < 3 ? (
@@ -292,7 +292,7 @@ const Calling=()=> {
                   onPress={handleNext}
                 >
                   <Text className="text-white font-bold mr-2">Next</Text>
-                  <ArrowRight size={20} color="#fff" />
+                  {/* <ArrowRight size={20} color="#fff" /> */}
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity
@@ -300,7 +300,7 @@ const Calling=()=> {
                   onPress={handleSave}
                 >
                   <Text className="text-white font-bold mr-2">Save</Text>
-                  <Save size={20} color="#fff" />
+                  {/* <Save size={20} color="#fff" /> */}
                 </TouchableOpacity>
               )}
             </View>
