@@ -14,7 +14,7 @@ const CELL_HEIGHT = 64;
 const HEADER_HEIGHT = 64;
 
 const TimeSlots = {
-  START: 10,
+  START: 9,
   END: 18,
   FORMAT: "h:mm A",
 };
@@ -43,20 +43,51 @@ const generateTimeSlots = () => {
   return slots;
 };
 
-const generateMockMeetings = (salesTeam: string[], timeSlots: string[]): Meeting[] => {
-  return salesTeam.flatMap((member, teamIndex) => 
-    Array(Math.floor(Math.random() * 3)).fill(null).map((_, i) => {
-      const timeSlotIndex = Math.floor(Math.random() * timeSlots.length);
-      return {
-        id: `${teamIndex}-${i}`,
-        title: `Meeting ${teamIndex}-${i}`,
-        time: timeSlots[timeSlotIndex],
-        attendees: [member, salesTeam[Math.floor(Math.random() * salesTeam.length)]],
-        teamMemberIndex: teamIndex,
-        timeSlotIndex: timeSlotIndex,
-      };
-    })
-  );
+const generateDummyMeetings = (salesTeam: string[], timeSlots: string[]): Meeting[] => {
+  const meetings: Meeting[] = [
+    {
+      id: '1',
+      title: 'Product Review',
+      time: '9:00 AM',
+      attendees: ['Supto', 'Nyim'],
+      teamMemberIndex: 0,
+      timeSlotIndex: 0,
+    },
+    {
+      id: '2',
+      title: 'Client Pitch',
+      time: '11:00 AM',
+      attendees: ['Sahmak', 'Tom', 'Mon'],
+      teamMemberIndex: 2,
+      timeSlotIndex: 2,
+    },
+    {
+      id: '3',
+      title: 'Team Sync',
+      time: '2:00 PM',
+      attendees: ['Toli', 'Boli', 'dfdf'],
+      teamMemberIndex: 5,
+      timeSlotIndex: 5,
+    },
+    {
+      id: '4',
+      title: 'Project Kickoff',
+      time: '10:00 AM',
+      attendees: ['djj', 'ygvd', 'jhneds'],
+      teamMemberIndex: 8,
+      timeSlotIndex: 1,
+    },
+    {
+      id: '5',
+      title: 'Budget Review',
+      time: '3:00 PM',
+      attendees: ['yhse', 'cannol', 'plant'],
+      teamMemberIndex: 12,
+      timeSlotIndex: 6,
+    },
+  ];
+
+  return meetings;
 };
 
 // MeetingCard component
@@ -97,7 +128,7 @@ const Meeting: React.FC = () => {
   ], []);
 
   // State for meetings
-  const [meetings, setMeetings] = useState(() => generateMockMeetings(salesTeam, timeSlots));
+  const [meetings, setMeetings] = useState(() => generateDummyMeetings(salesTeam, timeSlots));
 
   // Optimized scroll handlers using useCallback
   const handleVerticalScroll = useCallback(({ nativeEvent }) => {
@@ -252,7 +283,7 @@ const Meeting: React.FC = () => {
                 keyExtractor={(item) => item.id}
                 renderItem={MeetingCard}
                 containerStyle={{ width: CELL_WIDTH * timeSlots.length, height: CELL_HEIGHT * salesTeam.length }}
-                activationDistance={10}
+                activationDistance={5}
               />
             </StyledView>
           </StyledScrollView>

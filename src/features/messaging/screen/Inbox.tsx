@@ -7,11 +7,15 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
-import {useRoute} from '@react-navigation/native';
+import {useNavigation, useRoute} from '@react-navigation/native';
 import {useGetConversationMessagesQuery} from '../../../redux/conversation/conversationApi';
- 
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import Responders from './components/Responders';
+
 export default function Inbox() {
+  const navigation = useNavigation();
   const route = useRoute();
   const {conversationId} = route.params;
   const [message, setMessage] = useState('');
@@ -53,9 +57,7 @@ export default function Inbox() {
   const sortedMessages = conversation?.messages
     .slice()
     .sort((a, b) => new Date(a.date) - new Date(b.date));
-
-  // Render each message item styled like a chat bubble
-  const renderMessage = ({item}) => (
+   const renderMessage = ({item}) => (
     <View
       className={`max-w-3/4 rounded-lg px-3 py-2 my-1 ${
         item.sentByMe ? 'bg-green-100 self-end' : 'bg-white self-start'
@@ -70,26 +72,30 @@ export default function Inbox() {
     </View>
   );
 
-  const handleInteraction = (action: 'send' | 'attachment' | 'voice') => {
-    switch (action) {
-      case 'send':
-        console.log('Sending message:', message);
-        setMessage('');
-        break;
-      case 'attachment':
-        console.log('Opening attachment options');
-        break;
-      case 'voice':
-        console.log('Starting voice recording');
-        break;
-    }
-  };
-
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       className="flex-1">
       <View className="flex-1 bg-gray-200">
+        <View className="bg-blue-400 p-4 flex-row items-center justify-between">
+          <View className="flex-row gap-2">
+            <Text
+              onPress={() => navigation.goBack()}
+              className="text-2xl font-bold text-white">
+              <Icon name="arrow-back" size={24} />
+            </Text>
+            <Text
+              onPress={() => navigation.goBack()}
+              className="text-2xl font-bold text-white">
+              Inbox
+            </Text>
+          </View>
+          {/* drop should appear bottom sheet modal ok  */}
+          <Image
+            source={require('../../../assets/836.jpg')}
+            className="rounded-full h-10 w-10"
+          />
+        </View>
         <FlatList
           ref={flatListRef}
           data={sortedMessages}
@@ -98,18 +104,10 @@ export default function Inbox() {
           contentContainerStyle={{paddingHorizontal: 10, paddingBottom: 10}}
           onContentSizeChange={() =>
             flatListRef.current?.scrollToEnd({animated: true})
-          } // Scrolls to bottom when new content is added
+          } 
         />
 
-        <View className="flex-row items-center p-2 bg-gray-300 border-t border-gray-200">
-          <TextInput
-            className="flex-1 bg-white text-black rounded-full px-4 py-2 mx-2 text-base"
-            value={message}
-            onChangeText={setMessage}
-            placeholder="Type a message..."
-            multiline
-          />
-        </View>
+        <Responders leadId={conversationId} />
       </View>
     </KeyboardAvoidingView>
   );

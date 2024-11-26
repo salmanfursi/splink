@@ -1,62 +1,4 @@
-
-// import React from 'react';
-// import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-// import CallsScreen from '../tab-screens/CallsScreen';
-// import MessagingStack from '../features/messaging/navigations/MessagingStack';
-// import Meeting from '../tab-screens/Meeting';
-
-// const Tab = createBottomTabNavigator();
-
-// const BottomTabNavigator = () => {
  
-//   return (
-//     <Tab.Navigator
-//       screenOptions={{
-//         tabBarIcon: ({ focused, color, size }) => {
-//           let iconName;
-
-//           if (route.name === 'Home') {
-//             iconName = focused ? 'home' : 'home';
-//           } else if (route.name === 'Profile') {
-//             iconName = focused ? 'person' : 'person-outline';
-//           } else if (route.name === 'Settings') {
-//             iconName = focused ? 'settings' : 'settings-outline';
-//           }
-
-//           // Return the icon component
-//           return <Icon name={iconName} size={size || 24} color={color} />;
-//         },
-//         headerShown: false,
-//         tabBarActiveTintColor: '#000000',
-//         tabBarInactiveTintColor: '#666666',
-//         tabBarStyle: {
-//           paddingVertical: 5,
-//           borderTopLeftRadius: 15,
-//           borderTopRightRadius: 15,
-//           backgroundColor: 'white',
-//           height: 60,
-//         },
-//         tabBarLabelStyle: {
-//           paddingBottom: 7,
-//         },
-//       }}
-//     >
-//       <Tab.Screen name="Chat" component={MessagingStack} />
-//       <Tab.Screen name="Calls"   component={CallsScreen} />
-//       <Tab.Screen name="meeting" component={Meeting} />
-//     </Tab.Navigator>
-//   );
-// };
-
-// export default BottomTabNavigator;
-
-
-
-
-
-
-
-
 
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -84,15 +26,21 @@ const BottomTabNavigator = () => {
             } else if (route.name === 'meeting') {
               iconName = 'event' ;
             }
-            return<Text className={`text-${focused ? "blue-400" : "black"}`}><Icon name={iconName} size={size || 24} /></Text>
+            return<Text className={`${focused ? "text-blue-400" : "text-gray-500"}`}><Icon name={iconName} size={size || 24} /></Text>
           },
           tabBarActiveTintColor: 'blue',
           tabBarInactiveTintColor: 'gray',
-          tabBarStyle: { paddingBottom: 5, height: 60 },
+           headerShown:false,
+          tabBarLabel: ({ focused }) => (
+            <Text className={`${focused ? 'text-blue-400' : 'text-gray-500'} text-xs`}>
+              {route.name}
+            </Text>
+          ),
         })}
+        
       >
        <Tab.Screen name="Chat" component={MessagingStack} />
-       <Tab.Screen name="Calls"   component={CallsScreen} />
+       <Tab.Screen name="Calls" component={CallsScreen} />
        <Tab.Screen name="meeting" component={Meeting} />
       </Tab.Navigator>
    );
