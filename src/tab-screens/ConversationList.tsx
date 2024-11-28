@@ -13,6 +13,7 @@ import {
   useMarkAsSeenMutation,
 } from '../redux/conversation/conversationApi';
 import moment from 'moment';
+ 
   
 const ConversationList = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -26,6 +27,8 @@ const ConversationList = () => {
       page: currentPage,
       limit,
     });
+    const lead=data?.leads
+    console.log('sorted message',data?.leads.map(c => console.log(c)))
 
   const [markAsSeen] = useMarkAsSeenMutation();
 
@@ -36,9 +39,9 @@ const ConversationList = () => {
     }
   }, [isFetching, isLoading, currentPage, data]);
 
-  const handleSelectConversation = async selectedLeadId => {
-    await markAsSeen({id: selectedLeadId});
-    navigation.navigate('inbox', {conversationId: selectedLeadId});
+  const handleSelectConversation =selectedLeadId => {
+    navigation.navigate('inbox', {conversationId: selectedLeadId,lead });
+    // markAsSeen({id: selectedLeadId});
   };
 
   const renderItem = ({item}) => {
@@ -51,12 +54,12 @@ const ConversationList = () => {
       <Pressable
         className="flex-row items-center p-4 border-b border-gray-200"
         onPress={() => handleSelectConversation(item._id)}>
-        {/* <Image
+        <Image
           source={{ uri: profilePictureUrl }}
           className="w-12 h-12 rounded-full mb-1"
-          onError={() => console.log("Image load error:", profilePictureUrl)}
-          onLoad={() => console.log("Image loaded successfully:", profilePictureUrl)}
-        /> */}
+          // onError={() => console.log("Image load error:", profilePictureUrl)}
+          // onLoad={() => console.log("Image loaded successfully:", profilePictureUrl)}
+        />
 
         <View className="flex-row items-center space-x-2">
 
@@ -111,8 +114,9 @@ const ConversationList = () => {
 
   return (
     <View className="flex-1 bg-white">
-      <View className="bg-green-500 p-4 flex-row items-center justify-between">
+      <View className="bg-blue-400 p-4 flex-row items-center justify-between">
         <Text className="text-2xl font-bold text-white">Conversations</Text>
+         {/* drop should appear bottom sheet modal ok  */}
         <Image
           source={require('../assets/836.jpg')}
           className="rounded-full h-10 w-10"

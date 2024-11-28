@@ -1,95 +1,82 @@
- 
+
 import React, { useState } from 'react';
-import { View, ScrollView, Text } from 'react-native';
-import SalesTeamList from '../features/meeting/components/SalesTeamList';
-import MeetingGrid from '../features/meeting/components/MeetingGrid';
+import { ScrollView, Text, View, TextInput } from 'react-native';
+import { styled } from 'nativewind';
 
-const MeetingScheduler = () => {
-  const [timeSlots] = useState(['11:00 AM', '2:00 PM', '4:00 PM', '5:00 PM', '6:00 PM']);
-  const [salesTeams] = useState([
-    'Team A',
-    'Team B',
-    'Team C',
-    'Team 2',
-    'Team 5',
-    'Team 6',
-    'Team 7',
-    'Team 8',
-  ]);
-  const [meetings, setMeetings] = useState([
-    {
-      id: 1,
-      title: 'Meeting 1',
-      timeSlot: '11:00 AM',
-      team: 'Team A',
-      status: 'confirmed',
-    },
-    {
-      id: 2,
-      title: 'Meeting 2',
-      timeSlot: '2:00 PM',
-      team: 'Team B',
-      status: 'pending',
-    },
-    {
-      id: 3,
-      title: 'Meeting 3',
-      timeSlot: '4:00 PM',
-      team: 'Team C',
-      status: 'pending',
-    },
-  ]);
+const StyledText = styled(Text);
+const StyledView = styled(View);
+const StyledTextInput = styled(TextInput);
 
-  const handleMeetingTap = (meeting) => {
-    console.log('Meeting tapped:', meeting);
-  };
+const ExcelLikeApp = () => {
+  const initialData = Array.from({ length: 20 }, (_, rowIndex) =>
+    Array.from({ length: 10 }, (_, colIndex) => `R${rowIndex + 1}C${colIndex + 1}`)
+  );
 
-  const handleNewMeeting = (team, slot) => {
-    console.log('New meeting for', team, 'at', slot);
+  const [gridData, setGridData] = useState(initialData);
+
+  // Handle cell edit
+  const handleEdit = (rowIndex, colIndex, newValue) => {
+    const updatedData = [...gridData];
+    updatedData[rowIndex][colIndex] = newValue;
+    setGridData(updatedData);
   };
 
   return (
-    <View className="flex-1">
-      {/* Header */}
-      <View className="p-4 flex-row justify-between bg-blue-500">
-        <Text className="text-white text-lg font-bold">Meeting Scheduler</Text>
-        <Text className="text-white text-lg font-bold">Date</Text>
-      </View>
+    <StyledView className="flex-1 bg-black">
+      {/* Horizontal Scroll for Columns */}
+      <ScrollView horizontal>
+        <StyledView>
+          {/* Header Row */}
+          <StyledView className="flex-row bg-gray-800 border-b border-gray-600">
+            <StyledText className="w-24 h-10 text-center justify-center items-center bg-gray-700 text-white font-bold">
+              #
+            </StyledText>
+            {gridData[0].map((_, colIndex) => (
+              <StyledText
+                key={colIndex}
+                className="w-24 h-10 text-center justify-center items-center bg-gray-800 text-white"
+              >
+                Col {colIndex + 1}
+              </StyledText>
+            ))}
+          </StyledView>
 
-      {/* Scheduler */}
-      <ScrollView className="flex-1">
-        <View className="flex-row">
-          {/* Sales Team List */}
-          <SalesTeamList salesTeams={salesTeams} />
-          {/* Horizontal Scrollable Grid */}
-          <ScrollView horizontal>
-            <View>
-              {/* Time Slot Row */}
-              <View className="flex-row border-b border-gray-300">
-                {timeSlots.map((slot) => (
-                  <View
-                    key={slot}
-                    className="h-20 p-2 w-24 items-center justify-center bg-gray-200 border-r border-gray-300"
-                  >
-                    <Text className="text-sm text-black font-bold">{slot}</Text>
-                  </View>
+          {/* Scrollable Grid */}
+          <ScrollView>
+            {gridData.map((row, rowIndex) => (
+              <StyledView key={rowIndex} className="flex-row">
+                {/* Index Column */}
+                <StyledText className="w-24 h-10 text-center justify-center items-center bg-gray-700 text-white">
+                  Row {rowIndex + 1}
+                </StyledText>
+                {/* Data Cells */}
+                {row.map((cell, colIndex) => (
+                  <StyledTextInput
+                    key={colIndex}
+                    className="w-24 h-10 text-center justify-center items-center border border-gray-600 bg-gray-900 text-white"
+                    value={cell}
+                    onChangeText={(newValue) =>
+                      handleEdit(rowIndex, colIndex, newValue)
+                    }
+                  />
                 ))}
-              </View>
-
-              {/* Meeting Grid */}
-              <MeetingGrid
-                meetings={meetings}
-                salesTeams={salesTeams}
-                timeSlots={timeSlots}
-                onMeetingTap={handleMeetingTap}
-                onNewMeeting={handleNewMeeting}
-              />
-            </View>
+              </StyledView>
+            ))}
           </ScrollView>
-        </View>
+        </StyledView>
       </ScrollView>
     </View>
   );
 };
 
-export default MeetingScheduler;
+export default ExcelLikeApp;
+
+
+ 
+
+
+
+
+
+
+

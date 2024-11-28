@@ -109,6 +109,113 @@
 //     }
 //   };
 
+// History Screen Component
+// const Calling = () => {
+//   return (
+// <<<<<<< HEAD
+//     <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+//       <Text className="text-purple-500">History Tab</Text>
+//       <Text className="text-green-700">HistoryScreen</Text>
+//     </View>
+//   );
+// };
+
+// export default Calling;
+
+
+
+
+
+import React, { useState, useRef, useCallback } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import BottomSheet from '@gorhom/bottom-sheet';
+// import { MessageCircle, ArrowLeft, ArrowRight, Save } from 'lucide-react-native';
+
+const Calling=()=> {
+  const [isOpen, setIsOpen] = useState(false);
+  const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState({
+    name: '',
+    address: '',
+    budget: '',
+  });
+  const navigation = useNavigation();
+  const bottomSheetRef = useRef<BottomSheet>(null);
+
+  const handleInputChange = useCallback((name: string, value: string) => {
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
+  }, []);
+
+  const handleNext = useCallback(() => {
+    setStep((prevStep) => Math.min(prevStep + 1, 3));
+  }, []);
+
+  const handlePrevious = useCallback(() => {
+    setStep((prevStep) => Math.max(prevStep - 1, 1));
+  }, []);
+
+  const handleSave = useCallback(() => {
+    console.log('Saving data:', formData);
+    setIsOpen(false);
+    setStep(1);
+    bottomSheetRef.current?.close();
+    // Here you would typically send the data to your backend
+  }, [formData]);
+
+  const renderStep = useCallback(() => {
+    switch (step) {
+      case 1:
+        return (
+          <View className="mb-4">
+            <Text className="text-base mb-2">Name</Text>
+            <TextInput
+              className="border border-gray-300 rounded-lg p-2"
+              value={formData.name}
+              onChangeText={(value) => handleInputChange('name', value)}
+              placeholder="Enter your name"
+            />
+          </View>
+        );
+      case 2:
+        return (
+          <View className="mb-4">
+            <Text className="text-base mb-2">Address</Text>
+            <TextInput
+              className="border border-gray-300 rounded-lg p-2"
+              value={formData.address}
+              onChangeText={(value) => handleInputChange('address', value)}
+              placeholder="Enter your address"
+            />
+          </View>
+        );
+      case 3:
+        return (
+          <View className="mb-4">
+            <Text className="text-base mb-2">Budget</Text>
+            <TextInput
+              className="border border-gray-300 rounded-lg p-2"
+              value={formData.budget}
+              onChangeText={(value) => handleInputChange('budget', value)}
+              placeholder="Enter your budget"
+              keyboardType="numeric"
+            />
+          </View>
+        );
+      default:
+        return null;
+    }
+  }, [step, formData, handleInputChange]);
+
 //   return (
 //     <GestureHandlerRootView className="flex-1 justify-center bg-gray-100">
 //       <BottomSheetModalProvider>
@@ -170,208 +277,100 @@ import { Text, View } from 'react-native';
 
 const Calling = () => {
   return (
-    <View>
-      <Text className=' text-black'>calling</Text>
-    </View>
+    <SafeAreaView className="flex-1 bg-gray-100">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        className="flex-1"
+      >
+        <View className="flex-row justify-between items-center p-4 bg-blue-500">
+          <Text className="text-xl font-bold text-white">Inbox</Text>
+          <TouchableOpacity
+            className="flex-row items-center bg-white bg-opacity-30 px-3 py-2 rounded-full"
+            onPress={() => {
+              setIsOpen(true);
+              bottomSheetRef.current?.expand();
+            }}
+          >
+            {/* <MessageCircle size={20} color="#fff" /> */}
+            <Text className="text-white ml-2">Meeting</Text>
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView className="flex-1">
+          <Text className="text-center mt-5 text-gray-500">Your inbox messages will appear here</Text>
+        </ScrollView>
+
+        <View className="flex-row items-center p-2 border-t border-gray-200 bg-white">
+          <TextInput
+            className="flex-1 h-10 border border-gray-300 rounded-full px-4 mr-2"
+            placeholder="Type a message..."
+          />
+          <TouchableOpacity className="bg-blue-500 px-4 py-2 rounded-full">
+            <Text className="text-white font-bold">Send</Text>
+          </TouchableOpacity>
+        </View>
+
+        <BottomSheet
+          ref={bottomSheetRef}
+          index={-1}
+          snapPoints={['70%']}
+          enablePanDownToClose={true}
+          onClose={() => setIsOpen(false)}
+        >
+          <View className="flex-1 p-4">
+            <Text className="text-xl font-bold mb-4">Meeting Details</Text>
+            <View className="flex-row justify-between mb-6">
+              {[1, 2, 3].map((i) => (
+                <View key={i} className="flex-1 items-center">
+                  <Text
+                    className={`${
+                      i === step ? 'text-blue-500 font-bold' : 'text-gray-400'
+                    }`}
+                  >
+                    Step {i}
+                  </Text>
+                </View>
+              ))}
+            </View>
+            <ScrollView className="flex-1">
+              {renderStep()}
+            </ScrollView>
+            <View className="flex-row justify-between mt-4">
+              <TouchableOpacity
+                className={`flex-row items-center ${
+                  step === 1 ? 'bg-gray-300' : 'bg-blue-500'
+                } px-4 py-2 rounded-lg`}
+                onPress={handlePrevious}
+                disabled={step === 1}
+              >
+                {/* <ArrowLeft size={20} color="#fff" /> */}
+                <Text className="text-white font-bold ml-2">Previous</Text>
+              </TouchableOpacity>
+              {step < 3 ? (
+                <TouchableOpacity
+                  className="flex-row items-center bg-blue-500 px-4 py-2 rounded-lg"
+                  onPress={handleNext}
+                >
+                  <Text className="text-white font-bold mr-2">Next</Text>
+                  {/* <ArrowRight size={20} color="#fff" /> */}
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  className="flex-row items-center bg-blue-500 px-4 py-2 rounded-lg"
+                  onPress={handleSave}
+                >
+                  <Text className="text-white font-bold mr-2">Save</Text>
+                  {/* <Save size={20} color="#fff" /> */}
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        </BottomSheet>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
-};
-
-export default App;
-
+}
+export default Calling
 
 
 
-
-
-
-
-
-
-
-
-
-
-// import React, { useState } from 'react';
-// import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-// import Icon from 'react-native-vector-icons/MaterialIcons';
-
-// const savedContacts = [
-//   { id: '1', name: 'John Doe', number: '+1 234 567 890' },
-//   { id: '2', name: 'Sarah Connor', number: '+1 987 654 321' },
-//   { id: '3', name: 'Mike Ross', number: '+1 456 789 123' },
-//   { id: '4', name: 'Rachel Green', number: '+1 321 654 987' },
-//   { id: '5', name: 'Monica Geller', number: '+1 123 456 789' },
-// ];
-
-// export default function Calling() {
-//   const [currentCall, setCurrentCall] = useState(null); // Stores the current call info
-//   const [callStatus, setCallStatus] = useState('idle'); // 'idle', 'calling', 'ended'
-
-//   const startCall = (contact) => {
-//     setCurrentCall(contact);
-//     setCallStatus('calling');
-//   };
-
-//   const endCall = () => {
-//     setCallStatus('ended');
-//     setTimeout(() => {
-//       setCurrentCall(null);
-//       setCallStatus('idle');
-//     }, 2000); // Reset after 2 seconds
-//   };
-
-//   const renderContact = ({ item }) => (
-//     <TouchableOpacity
-//       style={styles.contactContainer}
-//       onPress={() => startCall(item)}
-//     >
-//       <View style={styles.iconContainer}>
-//         <Text style={styles.iconText}>{item.name[0]}</Text>
-//       </View>
-//       <View style={{ flex: 1 }}>
-//         <Text style={styles.contactName}>{item.name}</Text>
-//         <Text style={styles.contactNumber}>{item.number}</Text>
-//       </View>
-//       <Icon name="phone" size={24} color="#10b981" />
-//     </TouchableOpacity>
-//   );
-
-//   return (
-//     <View style={styles.container}>
-//       {callStatus === 'idle' && (
-//         <>
-//           <Text style={styles.headerText}>Saved Contacts</Text>
-//           <FlatList
-//             data={savedContacts}
-//             renderItem={renderContact}
-//             keyExtractor={(item) => item.id}
-//             contentContainerStyle={styles.contactList}
-//           />
-//         </>
-//       )}
-
-//       {callStatus === 'calling' && currentCall && (
-//         <View style={styles.callScreen}>
-//           <Text style={styles.callStatusText}>Calling...</Text>
-//           <View style={styles.iconContainerLarge}>
-//             <Text style={styles.iconTextLarge}>{currentCall.name[0]}</Text>
-//           </View>
-//           <Text style={styles.contactNameLarge}>{currentCall.name}</Text>
-//           <Text style={styles.contactNumberLarge}>{currentCall.number}</Text>
-//           <TouchableOpacity style={styles.endCallButton} onPress={endCall}>
-//             <Icon name="call-end" size={28} color="white" />
-//             <Text style={styles.endCallText}>End Call</Text>
-//           </TouchableOpacity>
-//         </View>
-//       )}
-
-//       {callStatus === 'ended' && currentCall && (
-//         <View style={styles.callScreen}>
-//           <Text style={styles.callStatusText}>Call Ended</Text>
-//           <View style={styles.iconContainerLarge}>
-//             <Icon name="call-end" size={48} color="#9ca3af" />
-//           </View>
-//           <Text style={styles.contactNameLarge}>{currentCall.name}</Text>
-//           <Text style={styles.contactNumberLarge}>{currentCall.number}</Text>
-//         </View>
-//       )}
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: '#f9fafb',
-//     padding: 16,
-//   },
-//   headerText: {
-//     fontSize: 20,
-//     fontWeight: 'bold',
-//     marginBottom: 16,
-//     color: '#111827',
-//   },
-//   contactList: {
-//     paddingBottom: 16,
-//   },
-//   contactContainer: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     backgroundColor: 'white',
-//     padding: 16,
-//     borderRadius: 8,
-//     marginBottom: 12,
-//     elevation: 2,
-//   },
-//   iconContainer: {
-//     width: 48,
-//     height: 48,
-//     borderRadius: 24,
-//     backgroundColor: '#3b82f6',
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     marginRight: 16,
-//   },
-//   iconText: {
-//     color: 'white',
-//     fontSize: 18,
-//     fontWeight: 'bold',
-//   },
-//   contactName: {
-//     fontSize: 16,
-//     fontWeight: 'bold',
-//     color: '#111827',
-//   },
-//   contactNumber: {
-//     fontSize: 14,
-//     color: '#6b7280',
-//   },
-//   callScreen: {
-//     flex: 1,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//   },
-//   callStatusText: {
-//     fontSize: 18,
-//     color: '#6b7280',
-//     marginBottom: 16,
-//   },
-//   iconContainerLarge: {
-//     width: 96,
-//     height: 96,
-//     borderRadius: 48,
-//     backgroundColor: '#3b82f6',
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     marginBottom: 16,
-//   },
-//   iconTextLarge: {
-//     color: 'white',
-//     fontSize: 36,
-//     fontWeight: 'bold',
-//   },
-//   contactNameLarge: {
-//     fontSize: 24,
-//     fontWeight: 'bold',
-//     color: '#111827',
-//     marginBottom: 8,
-//   },
-//   contactNumberLarge: {
-//     fontSize: 18,
-//     color: '#6b7280',
-//   },
-//   endCallButton: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     backgroundColor: '#ef4444',
-//     paddingVertical: 12,
-//     paddingHorizontal: 32,
-//     borderRadius: 24,
-//     marginTop: 32,
-//   },
-//   endCallText: {
-//     color: 'white',
-//     fontSize: 16,
-//     marginLeft: 8,
-//   },
-// });
