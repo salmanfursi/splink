@@ -39,7 +39,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSendMessageMutation } from '../../../../redux/message/messageApi';
  
 const Responders = ({ leadId }) => {
-    console.log('near the input----->',leadId)
+    // console.log('near the input----->',leadId)
   const [message, setMessage] = useState('');
   const [sendMessage, { isLoading }] = useSendMessageMutation(); // Hook to call the API
 

@@ -27,7 +27,8 @@ const ConversationList = () => {
       page: currentPage,
       limit,
     });
-    // console.log('sorted message',data.leads.map(c => console.log(c.name)))
+    const lead=data?.leads
+    console.log('sorted message',data?.leads.map(c => console.log(c)))
 
   const [markAsSeen] = useMarkAsSeenMutation();
 
@@ -39,7 +40,7 @@ const ConversationList = () => {
   }, [isFetching, isLoading, currentPage, data]);
 
   const handleSelectConversation =selectedLeadId => {
-    navigation.navigate('inbox', {conversationId: selectedLeadId});
+    navigation.navigate('inbox', {conversationId: selectedLeadId,lead });
     // markAsSeen({id: selectedLeadId});
   };
 
