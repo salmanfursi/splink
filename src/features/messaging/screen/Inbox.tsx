@@ -13,15 +13,26 @@ import {useNavigation, useRoute} from '@react-navigation/native';
 import { useGetConversationMessagesQuery} from '../../../redux/conversation/conversationApi';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Responders from './components/Responders';
+import MeetingBottomSheet from './components/InboxMeetingSheet';
 
 export default function Inbox() {
+  const bottomSheetRef = useRef(null);
+  const openBottomSheet = () => {
+    console.log('its open botton sheet')
+    bottomSheetRef.current?.expand();
+  };
+  const closeBottomSheet = () => {
+    console.log('its clossing botton sheet')
+    bottomSheetRef.current?.close();
+  };
+
   const navigation = useNavigation();
   const route = useRoute();
   const {conversationId,lead} = route.params;
   const [message, setMessage] = useState('');
   const flatListRef = useRef(null);
 
-  const leads = lead.find((l) => l._id === conversationId);
+  const leads = lead.find( l => l._id === conversationId);
   console.log('from inbox page',leads.name)
 
   // Fetch conversation messages using RTK Query
@@ -98,12 +109,18 @@ export default function Inbox() {
           </View>
           {/* drop should appear bottom sheet modal ok  */}
           <View className="flex-row items-center gap-3">
-            {['call', 'event', 'info'].map((iconName, index) => (
-              <Icon key={index} name={iconName} size={24} color="#fff" />
-            ))}
-          </View>
+               <Icon name="call" size={24} color="#fff" />
+              <Icon name="event" 
+                onPress={() => {
+                  console.log('Opening Bottom Sheet');
+                  openBottomSheet();
+                }}
+              // onPress={openBottomSheet} 
+              size={24} color="#fff" />
+              <Icon name="info" size={24} color="#fff" />
+           </View>
         </View>
-
+        
         <FlatList
           ref={flatListRef}
           data={sortedMessages}
@@ -117,6 +134,8 @@ export default function Inbox() {
 
         <Responders leadId={conversationId} />
       </View>
+       {/* Meeting Bottom Sheet */}
+       <MeetingBottomSheet ref={bottomSheetRef} onClose={closeBottomSheet} />
     </KeyboardAvoidingView>
   );
 }

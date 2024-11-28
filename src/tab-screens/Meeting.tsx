@@ -65,7 +65,7 @@ const ExcelLikeApp = () => {
           </ScrollView>
         </StyledView>
       </ScrollView>
-    </View>
+    </StyledView>
   );
 };
 
