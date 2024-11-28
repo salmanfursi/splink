@@ -1,133 +1,95 @@
+ 
+import React, { useState } from 'react';
+import { View, ScrollView, Text } from 'react-native';
+import SalesTeamList from '../features/meeting/components/SalesTeamList';
+import MeetingGrid from '../features/meeting/components/MeetingGrid';
 
+const MeetingScheduler = () => {
+  const [timeSlots] = useState(['11:00 AM', '2:00 PM', '4:00 PM', '5:00 PM', '6:00 PM']);
+  const [salesTeams] = useState([
+    'Team A',
+    'Team B',
+    'Team C',
+    'Team 2',
+    'Team 5',
+    'Team 6',
+    'Team 7',
+    'Team 8',
+  ]);
+  const [meetings, setMeetings] = useState([
+    {
+      id: 1,
+      title: 'Meeting 1',
+      timeSlot: '11:00 AM',
+      team: 'Team A',
+      status: 'confirmed',
+    },
+    {
+      id: 2,
+      title: 'Meeting 2',
+      timeSlot: '2:00 PM',
+      team: 'Team B',
+      status: 'pending',
+    },
+    {
+      id: 3,
+      title: 'Meeting 3',
+      timeSlot: '4:00 PM',
+      team: 'Team C',
+      status: 'pending',
+    },
+  ]);
 
+  const handleMeetingTap = (meeting) => {
+    console.log('Meeting tapped:', meeting);
+  };
 
-
-
-
-
-
-
-// import React from "react";
-// import { View, Text, FlatList } from "react-native";
-// import { styled } from "nativewind";
-
-// const timeslots = ["11:00 AM", "2:00 PM", "4:00 PM", "6:00 PM"];
-// const rows = Array.from({ length: 50 }, (_, i) => i + 1); // For 50 rows example
-
-// const StyledView = styled(View);
-// const StyledText = styled(Text);
-
-// export default function Scheduler() {
-//   const renderCell = (time, rowIndex) => (
-//     <StyledView className="flex-1 h-12 border border-gray-700 justify-center items-center" key={`${time}-${rowIndex}`}>
-//       {/* Meeting details can go here */}
-//       <StyledText className="text-white"></StyledText>
-//     </StyledView>
-//   );
-
-//   const renderRow = ({ item: rowIndex }) => (
-//     <StyledView className="flex-row" key={rowIndex}>
-//       {timeslots.map((time) => renderCell(time, rowIndex))}
-//     </StyledView>
-//   );
-
-//   return (
-//     <StyledView className="flex-1 bg-black">
-//       {/* Header Row */}
-//       <StyledView className="flex-row bg-gray-800">
-//         {timeslots.map((time) => (
-//           <StyledView className="flex-1 p-3 border-b border-gray-600" key={time}>
-//             <StyledText className="text-white font-bold text-center">{time}</StyledText>
-//           </StyledView>
-//         ))}
-//       </StyledView>
-
-//       {/* Content Rows */}
-//       <FlatList
-//         data={rows}
-//         renderItem={renderRow}
-//         keyExtractor={(item) => item.toString()}
-//       />
-//     </StyledView>
-//   );
-// }
-
-
-
-
-
-
-
-
-
-
-
-import React from "react";
-import { View, Text, ScrollView, FlatList } from "react-native";
-import { styled } from "nativewind";
-
-// Define your data
-const timeslots = ["11:00 AM", "2:00 PM", "4:00 PM", "6:00 PM"]; // Example time slots
-const salesTeams = ["Salman", "Kawser", "Mehnaj", "Faruk", "Mamon", "Yeasin"]; // Example sales team names
-const rows = Array.from({ length: salesTeams.length }, (_, i) => i); // Rows based on sales team count
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-
-export default function Scheduler() {
-  const renderCell = (time, rowIndex) => (
-    <StyledView className="w-24 h-12 border border-gray-700 justify-center items-center" key={`${time}-${rowIndex}`}>
-      {/* Meeting details can go here */}
-      <StyledText className="text-white"></StyledText>
-    </StyledView>
-  );
-
-  const renderRow = ({ item: rowIndex }) => (
-    <StyledView className="flex-row" key={rowIndex}>
-      {timeslots.map((time) => renderCell(time, rowIndex))}
-    </StyledView>
-  );
+  const handleNewMeeting = (team, slot) => {
+    console.log('New meeting for', team, 'at', slot);
+  };
 
   return (
-    <StyledView className="flex-1 bg-black">
-      {/* Main container with horizontal scroll for the time slots */}
-      <ScrollView horizontal={true} bounces={false}>
-        <StyledView className="flex-row">
-          {/* Sales Team Column (Fixed Left Side) */}
-          <StyledView>
-            <StyledView className="w-24 h-12 bg-gray-800 border-b border-gray-600 justify-center items-center">
-              <StyledText className="text-white font-bold text-center">Sales Team</StyledText>
-            </StyledView>
-            {salesTeams.map((team, index) => (
-              <StyledView className="w-24 h-12 border border-gray-700 justify-center items-center bg-gray-900" key={index}>
-                <StyledText className="text-white font-bold text-center">{team}</StyledText>
-              </StyledView>
-            ))}
-          </StyledView>
+    <View className="flex-1">
+      {/* Header */}
+      <View className="p-4 flex-row justify-between bg-blue-500">
+        <Text className="text-white text-lg font-bold">Meeting Scheduler</Text>
+        <Text className="text-white text-lg font-bold">Date</Text>
+      </View>
 
-          {/* Time Slots Header */}
-          <StyledView className="flex-1">
-            <StyledView className="flex-row bg-gray-800">
-              {timeslots.map((time) => (
-                <StyledView className="w-24 h-12 border-b border-gray-600 justify-center items-center" key={time}>
-                  <StyledText className="text-white font-bold text-center">{time}</StyledText>
-                </StyledView>
-              ))}
-            </StyledView>
+      {/* Scheduler */}
+      <ScrollView className="flex-1">
+        <View className="flex-row">
+          {/* Sales Team List */}
+          <SalesTeamList salesTeams={salesTeams} />
+          {/* Horizontal Scrollable Grid */}
+          <ScrollView horizontal>
+            <View>
+              {/* Time Slot Row */}
+              <View className="flex-row border-b border-gray-300">
+                {timeSlots.map((slot) => (
+                  <View
+                    key={slot}
+                    className="h-20 p-2 w-24 items-center justify-center bg-gray-200 border-r border-gray-300"
+                  >
+                    <Text className="text-sm text-black font-bold">{slot}</Text>
+                  </View>
+                ))}
+              </View>
 
-            {/* Scrollable Rows for Meetings */}
-            <ScrollView bounces={false}>
-              <FlatList
-                data={rows}
-                renderItem={renderRow}
-                keyExtractor={(item) => item.toString()}
-                scrollEnabled={false} // Disable internal scrolling of FlatList
+              {/* Meeting Grid */}
+              <MeetingGrid
+                meetings={meetings}
+                salesTeams={salesTeams}
+                timeSlots={timeSlots}
+                onMeetingTap={handleMeetingTap}
+                onNewMeeting={handleNewMeeting}
               />
-            </ScrollView>
-          </StyledView>
-        </StyledView>
+            </View>
+          </ScrollView>
+        </View>
       </ScrollView>
-    </StyledView>
+    </View>
   );
-}
+};
 
+export default MeetingScheduler;

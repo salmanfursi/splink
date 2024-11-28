@@ -176,4 +176,202 @@ const Calling = () => {
   );
 };
 
-export default Calling;
+export default App;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import React, { useState } from 'react';
+// import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+// import Icon from 'react-native-vector-icons/MaterialIcons';
+
+// const savedContacts = [
+//   { id: '1', name: 'John Doe', number: '+1 234 567 890' },
+//   { id: '2', name: 'Sarah Connor', number: '+1 987 654 321' },
+//   { id: '3', name: 'Mike Ross', number: '+1 456 789 123' },
+//   { id: '4', name: 'Rachel Green', number: '+1 321 654 987' },
+//   { id: '5', name: 'Monica Geller', number: '+1 123 456 789' },
+// ];
+
+// export default function Calling() {
+//   const [currentCall, setCurrentCall] = useState(null); // Stores the current call info
+//   const [callStatus, setCallStatus] = useState('idle'); // 'idle', 'calling', 'ended'
+
+//   const startCall = (contact) => {
+//     setCurrentCall(contact);
+//     setCallStatus('calling');
+//   };
+
+//   const endCall = () => {
+//     setCallStatus('ended');
+//     setTimeout(() => {
+//       setCurrentCall(null);
+//       setCallStatus('idle');
+//     }, 2000); // Reset after 2 seconds
+//   };
+
+//   const renderContact = ({ item }) => (
+//     <TouchableOpacity
+//       style={styles.contactContainer}
+//       onPress={() => startCall(item)}
+//     >
+//       <View style={styles.iconContainer}>
+//         <Text style={styles.iconText}>{item.name[0]}</Text>
+//       </View>
+//       <View style={{ flex: 1 }}>
+//         <Text style={styles.contactName}>{item.name}</Text>
+//         <Text style={styles.contactNumber}>{item.number}</Text>
+//       </View>
+//       <Icon name="phone" size={24} color="#10b981" />
+//     </TouchableOpacity>
+//   );
+
+//   return (
+//     <View style={styles.container}>
+//       {callStatus === 'idle' && (
+//         <>
+//           <Text style={styles.headerText}>Saved Contacts</Text>
+//           <FlatList
+//             data={savedContacts}
+//             renderItem={renderContact}
+//             keyExtractor={(item) => item.id}
+//             contentContainerStyle={styles.contactList}
+//           />
+//         </>
+//       )}
+
+//       {callStatus === 'calling' && currentCall && (
+//         <View style={styles.callScreen}>
+//           <Text style={styles.callStatusText}>Calling...</Text>
+//           <View style={styles.iconContainerLarge}>
+//             <Text style={styles.iconTextLarge}>{currentCall.name[0]}</Text>
+//           </View>
+//           <Text style={styles.contactNameLarge}>{currentCall.name}</Text>
+//           <Text style={styles.contactNumberLarge}>{currentCall.number}</Text>
+//           <TouchableOpacity style={styles.endCallButton} onPress={endCall}>
+//             <Icon name="call-end" size={28} color="white" />
+//             <Text style={styles.endCallText}>End Call</Text>
+//           </TouchableOpacity>
+//         </View>
+//       )}
+
+//       {callStatus === 'ended' && currentCall && (
+//         <View style={styles.callScreen}>
+//           <Text style={styles.callStatusText}>Call Ended</Text>
+//           <View style={styles.iconContainerLarge}>
+//             <Icon name="call-end" size={48} color="#9ca3af" />
+//           </View>
+//           <Text style={styles.contactNameLarge}>{currentCall.name}</Text>
+//           <Text style={styles.contactNumberLarge}>{currentCall.number}</Text>
+//         </View>
+//       )}
+//     </View>
+//   );
+// }
+
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     backgroundColor: '#f9fafb',
+//     padding: 16,
+//   },
+//   headerText: {
+//     fontSize: 20,
+//     fontWeight: 'bold',
+//     marginBottom: 16,
+//     color: '#111827',
+//   },
+//   contactList: {
+//     paddingBottom: 16,
+//   },
+//   contactContainer: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     backgroundColor: 'white',
+//     padding: 16,
+//     borderRadius: 8,
+//     marginBottom: 12,
+//     elevation: 2,
+//   },
+//   iconContainer: {
+//     width: 48,
+//     height: 48,
+//     borderRadius: 24,
+//     backgroundColor: '#3b82f6',
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//     marginRight: 16,
+//   },
+//   iconText: {
+//     color: 'white',
+//     fontSize: 18,
+//     fontWeight: 'bold',
+//   },
+//   contactName: {
+//     fontSize: 16,
+//     fontWeight: 'bold',
+//     color: '#111827',
+//   },
+//   contactNumber: {
+//     fontSize: 14,
+//     color: '#6b7280',
+//   },
+//   callScreen: {
+//     flex: 1,
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//   },
+//   callStatusText: {
+//     fontSize: 18,
+//     color: '#6b7280',
+//     marginBottom: 16,
+//   },
+//   iconContainerLarge: {
+//     width: 96,
+//     height: 96,
+//     borderRadius: 48,
+//     backgroundColor: '#3b82f6',
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//     marginBottom: 16,
+//   },
+//   iconTextLarge: {
+//     color: 'white',
+//     fontSize: 36,
+//     fontWeight: 'bold',
+//   },
+//   contactNameLarge: {
+//     fontSize: 24,
+//     fontWeight: 'bold',
+//     color: '#111827',
+//     marginBottom: 8,
+//   },
+//   contactNumberLarge: {
+//     fontSize: 18,
+//     color: '#6b7280',
+//   },
+//   endCallButton: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     backgroundColor: '#ef4444',
+//     paddingVertical: 12,
+//     paddingHorizontal: 32,
+//     borderRadius: 24,
+//     marginTop: 32,
+//   },
+//   endCallText: {
+//     color: 'white',
+//     fontSize: 16,
+//     marginLeft: 8,
+//   },
+// });
