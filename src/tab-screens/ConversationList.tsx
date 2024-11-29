@@ -28,7 +28,7 @@ const ConversationList = () => {
       limit,
     });
     const lead=data?.leads
-    console.log('sorted message',data?.leads.map(c => console.log(c)))
+    // console.log('sorted message',data?.leads.map(c => console.log(c)))
 
   const [markAsSeen] = useMarkAsSeenMutation();
 
