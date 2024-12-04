@@ -48,7 +48,7 @@ const RootNavigator = () => {
           <Stack.Screen name="Login" component={LoginScreen} />
         ) : (  */}
           <Stack.Screen name="Main" component={BottomTabNavigator} />
-         {/* )}  */}
+          {/* )}   */}
       </Stack.Navigator>
     </NavigationContainer>
   );

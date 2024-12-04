@@ -9,7 +9,7 @@ const MessagingStack = () => {
   return (
     <Stack.Navigator >
       <Stack.Screen options={{headerShown: false}} name="Conversation" component={ConversationList} />
-      <Stack.Screen name="inbox" component={Inbox} />
+      <Stack.Screen options={{headerShown: false}} name="inbox" component={Inbox} />
     </Stack.Navigator>
   );
 };

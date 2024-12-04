@@ -15,11 +15,11 @@ const apiSlice = createApi({
       if (token && isValid) {
         headers.set('Authorization', `Bearer ${token}`);
       }
-
       return headers;
     },
   }),
-  endpoints: () => ({}),
+  tagTypes: ['Lead','Conversation'],
+  endpoints: () => ({})
 });
 
 export default apiSlice;
