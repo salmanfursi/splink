@@ -45,7 +45,8 @@ const InboxMeetingSheet = forwardRef((props, ref) => {
       ref={ref}
       snapPoints={snapPoints}
       onDismiss={props.onClose}
-      backdropComponent={props.onBackdropPress}>
+      backdropComponent={props.onBackdropPress}
+      >
       <BottomSheetView>
         <View className="p-4">
           <Text className="text-xl text-black font-bold ">
