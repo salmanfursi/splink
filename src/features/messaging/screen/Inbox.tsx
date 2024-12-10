@@ -13,41 +13,38 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import Responders from './components/Responders';
 import MeetingBottomSheet from './components/InboxMeetingSheet';
 import {BottomSheetModalProvider} from '@gorhom/bottom-sheet';
-import InfoSidebar from './components/InfoSidebar';
 import InboxCallSheet from './components/InboxCallSheet';
+import InfoSidebar from './components/infobar.tsx/InfoSidebar';
 
 export default function Inbox() {
   const bottomSheetRef = useRef(null);
   const callSheetRef = useRef(null);
   const [message, setMessage] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-   
+
   const openCallSheet = () => {
-    console.log("call sheet opening ",callSheetRef.current)
+    console.log('call sheet opening ', callSheetRef.current);
     callSheetRef.current?.present();
   };
 
   const closeCallSheet = () => {
     callSheetRef.current?.dismiss();
   };
-//will be remove letter---------
-const leadData = {
-  name: 'John Doe',
-  status: 'Active Lead',
-  avatar: 'optional_avatar_url',
-  phoneNumbers: [
-    { type: 'Mobile', number: '+1 (555) 123-4567' },
-    { type: 'Work', number: '+1 (555) 987-6543' }
-  ]
-};
+  //will be remove letter 
+  const leadData = {
+    name: 'John Doe',
+    status: 'Active Lead',
+    avatar: 'optional_avatar_url',
+    phoneNumbers: [
+      {type: 'Mobile', number: '+1 (555) 123-4567'},
+      {type: 'Work', number: '+1 (555) 987-6543'},
+    ],
+  };
 
-const handleCallSelect = (phoneNumber: string) => {
-  // Implement call logic
-  console.log('Selected number:', phoneNumber);
-};
-
-//will be remove letter---------
-
+  const handleCallSelect = (phoneNumber: string) => {
+    // Implement call logic
+    console.log('Selected number:', phoneNumber);
+  };
 
   const openBottomSheet = () => {
     console.log('Opening Bottom Sheet');
@@ -62,11 +59,11 @@ const handleCallSelect = (phoneNumber: string) => {
   const navigation = useNavigation();
   const route = useRoute();
   const {conversationId, lead} = route.params;
-
+console.log("inobox conversationId-------->",conversationId)
+  // console.log('leads in inbox to send infobar-->', lead.message);
   const flatListRef = useRef(null);
 
   const leads = lead?.find(l => l?._id === conversationId);
-
   // Fetch conversation messages using RTK Query
   const {
     data: conversation,
@@ -76,7 +73,7 @@ const handleCallSelect = (phoneNumber: string) => {
 
   // Scroll to the bottom whenever new messages are loaded
   useEffect(() => {
-    if (conversation?.messages) {
+     if (conversation?.messages) {
       flatListRef.current?.scrollToEnd({animated: true});
     }
   }, [conversation]);
@@ -120,14 +117,13 @@ const handleCallSelect = (phoneNumber: string) => {
 
   const truncateText = name => {
     const nameString = name.toString().trim();
-    if (nameString.length > 13) {
-      const truncated = nameString.slice(0, 13) + '...';
+    if (nameString.length > 12) {
+      const truncated = nameString.slice(0, 12) + '...';
       console.log('Truncated name:', truncated);
       return truncated;
     }
     return nameString;
   };
-
 
   const openSidebar = () => setIsSidebarOpen(true);
   const closeSidebar = () => setIsSidebarOpen(false);
@@ -140,9 +136,11 @@ const handleCallSelect = (phoneNumber: string) => {
         <InfoSidebar
           isOpen={isSidebarOpen}
           onOpen={openSidebar}
-          onClose={closeSidebar}>
+          onClose={closeSidebar}
+          conversationId={conversationId}
+        >
           <View className="flex-1 bg-gray-200">
-            <View className="bg-blue-400 p-4 flex-row justify-between">
+            <View className="bg-blue-400 p-2 flex-row justify-between">
               <View className="flex-row gap-2 items-center ">
                 <Text
                   onPress={() => navigation.goBack()}
@@ -155,7 +153,7 @@ const handleCallSelect = (phoneNumber: string) => {
                 />
                 <View className="flex-col item-center">
                   <Text
-                    className="font-bold text-lg  text-white "
+                    className="font-bold text-lg text-white "
                     numberOfLines={1}
                     ellipsizeMode="tail">
                     {truncateText(leads.name)}
@@ -164,10 +162,10 @@ const handleCallSelect = (phoneNumber: string) => {
                 </View>
               </View>
               <View className="flex-row items-center gap-3">
-                 <Icon 
-                  name="call" 
-                  size={24} 
-                  color="#fff" 
+                <Icon
+                  name="call"
+                  size={24}
+                  color="#fff"
                   onPress={openCallSheet} // Add this to open the call sheet
                 />
                 <Icon
@@ -204,19 +202,16 @@ const handleCallSelect = (phoneNumber: string) => {
           </View>
 
           <InboxCallSheet
-              ref={callSheetRef} 
-              // lead={leads} 
-              lead={leadData}//will remove
-              onCallSelect={handleCallSelect}//will remove
-              onClose={closeCallSheet} 
-            />
-
-
-
+            ref={callSheetRef}
+            // lead={leads}
+            lead={leadData} //will remove
+            onCallSelect={handleCallSelect} //will remove
+            onClose={closeCallSheet}
+          />
 
           {/* Meeting Bottom Sheet */}
           <MeetingBottomSheet ref={bottomSheetRef} onClose={closeBottomSheet} />
-        </InfoSidebar>
+          </InfoSidebar>
       </KeyboardAvoidingView>
     </BottomSheetModalProvider>
   );

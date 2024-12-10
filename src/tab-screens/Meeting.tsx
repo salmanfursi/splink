@@ -1,78 +1,194 @@
+import React, { useState, useRef } from 'react';
+import { View, Text, ScrollView, TextInput, StyleSheet, Dimensions } from 'react-native';
 
-import React, { useState } from 'react';
-import { ScrollView, Text, View, TextInput } from 'react-native';
-import { styled } from 'nativewind';
+const SpreadsheetGrid = () => {
+  // Extended sample data with more rows
+  const [gridData, setGridData] = useState([
+    { id: 1, rollNo: '101', name: 'Alice Johnson', marks: '88', total: '77' },
+    { id: 2, rollNo: '103', name: 'Bob Smith', marks: '92', total: '85' },
+    { id: 3, rollNo: '105', name: 'Carol White', marks: '95', total: '90' },
+    { id: 4, rollNo: '107', name: 'David Brown', marks: '91', total: '82' },
+    { id: 5, rollNo: '109', name: 'Eve Wilson', marks: '87', total: '79' },
+    { id: 6, rollNo: '111', name: 'Frank Davis', marks: '94', total: '88' },
+    { id: 7, rollNo: '113', name: 'Grace Taylor', marks: '89', total: '84' },
+    { id: 8, rollNo: '115', name: 'Henry Miller', marks: '93', total: '87' },
+    { id: 9, rollNo: '117', name: 'Ivy Clark', marks: '90', total: '85' },
+    { id: 10, rollNo: '119', name: 'Jack Lewis', marks: '86', total: '81' },
+    { id: 11, rollNo: '121', name: 'Kelly Moore', marks: '88', total: '83' },
+    { id: 12, rollNo: '123', name: 'Liam Hall', marks: '91', total: '86' },
+    { id: 13, rollNo: '125', name: 'Mary Adams', marks: '94', total: '89' },
+    { id: 14, rollNo: '127', name: 'Noah King', marks: '87', total: '82' },
+    { id: 15, rollNo: '129', name: 'Olivia Scott', marks: '92', total: '87' },
+    { id: 16, rollNo: '131', name: 'Peter Young', marks: '89', total: '84' },
+    { id: 17, rollNo: '133', name: 'Quinn Baker', marks: '93', total: '88' },
+    { id: 18, rollNo: '135', name: 'Rachel Green', marks: '90', total: '85' },
+    { id: 19, rollNo: '137', name: 'Sam Turner', marks: '88', total: '83' },
+    { id: 20, rollNo: '139', name: 'Tom Harris', marks: '91', total: '86' }
+  ]);
 
-const StyledText = styled(Text);
-const StyledView = styled(View);
-const StyledTextInput = styled(TextInput);
+  // Added more columns to demonstrate horizontal scrolling
+  const columns = [
+    'S.No.',
+    'Roll no',
+    'Name',
+    'Eng marks',
+    'Science m',
+    'Math marks',
+    'History m',
+    'Geography',
+    'Total',
+    'Percentage',
+    'Grade'
+  ];
+  
+  const mainScrollViewRef = useRef(null);
+  const horizontalScrollViewRef = useRef(null);
+  const verticalScrollViewRef = useRef(null);
 
-const ExcelLikeApp = () => {
-  const initialData = Array.from({ length: 20 }, (_, rowIndex) =>
-    Array.from({ length: 10 }, (_, colIndex) => `R${rowIndex + 1}C${colIndex + 1}`)
+  const renderHeaderCell = (text, index) => (
+    <View key={index} style={[
+      styles.headerCell,
+      index === 0 && styles.stickyColumn
+    ]}>
+      <Text style={styles.headerText}>{text}</Text>
+    </View>
   );
 
-  const [gridData, setGridData] = useState(initialData);
+  const renderCell = (text, rowIndex, cellIndex) => (
+    <View 
+      key={`${rowIndex}-${cellIndex}`} 
+      style={[
+        styles.cell,
+        cellIndex === 0 && styles.stickyColumn
+      ]}
+    >
+      <TextInput
+        style={styles.cellInput}
+        value={String(text)}
+        onChangeText={(newText) => {
+          // Implement cell update logic here
+        }}
+      />
+    </View>
+  );
 
-  // Handle cell edit
-  const handleEdit = (rowIndex, colIndex, newValue) => {
-    const updatedData = [...gridData];
-    updatedData[rowIndex][colIndex] = newValue;
-    setGridData(updatedData);
+  const handleMainScroll = (event) => {
+    const { x, y } = event.nativeEvent.contentOffset;
+    if (horizontalScrollViewRef.current) {
+      horizontalScrollViewRef.current.scrollTo({ x, animated: false });
+    }
+    if (verticalScrollViewRef.current) {
+      verticalScrollViewRef.current.scrollTo({ y, animated: false });
+    }
   };
 
-  return (
-    <StyledView className="flex-1 bg-black">
-      {/* Horizontal Scroll for Columns */}
-      <ScrollView horizontal>
-        <StyledView>
-          {/* Header Row */}
-          <StyledView className="flex-row bg-gray-800 border-b border-gray-600">
-            <StyledText className="w-24 h-10 text-center justify-center items-center bg-gray-700 text-white font-bold">
-              #
-            </StyledText>
-            {gridData[0].map((_, colIndex) => (
-              <StyledText
-                key={colIndex}
-                className="w-24 h-10 text-center justify-center items-center bg-gray-800 text-white"
-              >
-                Col {colIndex + 1}
-              </StyledText>
-            ))}
-          </StyledView>
+  const renderRow = (row, rowIndex) => (
+    <View key={rowIndex} style={styles.row}>
+      {renderCell(row.id, rowIndex, 0)}
+      {renderCell(row.rollNo, rowIndex, 1)}
+      {renderCell(row.name, rowIndex, 2)}
+      {renderCell(row.marks, rowIndex, 3)}
+      {renderCell(row.total, rowIndex, 4)}
+      {renderCell('85', rowIndex, 5)}
+      {renderCell('88', rowIndex, 6)}
+      {renderCell('92', rowIndex, 7)}
+      {renderCell(row.total, rowIndex, 8)}
+      {renderCell('87%', rowIndex, 9)}
+      {renderCell('A', rowIndex, 10)}
+    </View>
+  );
 
-          {/* Scrollable Grid */}
-          <ScrollView>
-            {gridData.map((row, rowIndex) => (
-              <StyledView key={rowIndex} className="flex-row">
-                {/* Index Column */}
-                <StyledText className="w-24 h-10 text-center justify-center items-center bg-gray-700 text-white">
-                  Row {rowIndex + 1}
-                </StyledText>
-                {/* Data Cells */}
-                {row.map((cell, colIndex) => (
-                  <StyledTextInput
-                    key={colIndex}
-                    className="w-24 h-10 text-center justify-center items-center border border-gray-600 bg-gray-900 text-white"
-                    value={cell}
-                    onChangeText={(newValue) =>
-                      handleEdit(rowIndex, colIndex, newValue)
-                    }
-                  />
-                ))}
-              </StyledView>
-            ))}
-          </ScrollView>
-        </StyledView>
+  return (
+    <View style={styles.container}>
+      {/* Fixed Header */}
+      <View style={styles.headerContainer}>
+        <ScrollView 
+          horizontal 
+          ref={horizontalScrollViewRef}
+          scrollEventThrottle={16}
+          showsHorizontalScrollIndicator={false}
+        >
+          <View style={styles.headerRow}>
+            {columns.map((column, index) => renderHeaderCell(column, index))}
+          </View>
+        </ScrollView>
+      </View>
+
+      {/* Main Grid */}
+      <ScrollView>
+        <ScrollView 
+          horizontal 
+          ref={mainScrollViewRef}
+          onScroll={handleMainScroll}
+          scrollEventThrottle={16}
+        >
+          <View>
+            {gridData.map((row, index) => renderRow(row, index))}
+          </View>
+        </ScrollView>
       </ScrollView>
-    </StyledView>
+    </View>
   );
 };
 
-export default ExcelLikeApp;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+  },
+  headerContainer: {
+    backgroundColor: '#f5f5f5',
+    zIndex: 2,
+    elevation: 2,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  headerCell: {
+    width: 100,
+    padding: 10,
+    justifyContent: 'center',
+    borderRightWidth: 1,
+    borderRightColor: '#e0e0e0',
+    backgroundColor: '#f5f5f5',
+  },
+  stickyColumn: {
+    position: 'sticky',
+    left: 0,
+    zIndex: 1,
+    elevation: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  headerText: {
+    fontWeight: 'bold',
+    color: '#333333',
+  },
+  row: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  cell: {
+    width: 100,
+    padding: 5,
+    justifyContent: 'center',
+    borderRightWidth: 1,
+    borderRightColor: '#e0e0e0',
+    backgroundColor: '#ffffff',
+  },
+  cellInput: {
+    padding: 5,
+    color: '#333333',
+  },
+});
+
+export default SpreadsheetGrid;
 
 
- 
+
+
 
 
 

@@ -5,8 +5,8 @@ import { io } from 'socket.io-client';
 
 let socket;
 
-export const connectSocket = () => {
-  socket = io('http://192.168.68.108:5000', {
+export const connectSocket = () => { 
+  socket = io('http://192.168.68.108:5000', {  
   // socket = io('http://localhost:5000', {
     path: '/socket.io',
     reconnectionDelay: 1000,
