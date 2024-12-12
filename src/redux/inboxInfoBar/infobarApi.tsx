@@ -72,35 +72,40 @@ const infoBarApi = apiSlice.injectEndpoints({
         url: `/lead/${id}/comments`,
         method: 'POST',
         body: comment,
-      }},
-    //   async onQueryStarted({id, comment}, {dispatch, queryFulfilled}) {
-    //     const handleCommentAdded = ({
-    //       leadId,
-    //       comment,
-    //     }: {
-    //       leadId: string;
-    //       comment: Comment;
-    //     }) => {
-    //       dispatch(
-    //         infoBarApi.util.updateQueryData('getSingleLead', id, lead => {
-    //           const existingComment = lead.comment.find(
-    //             c => c._id === comment._id,
-    //           );
-    //           if (!existingComment) {
-    //             lead.comment.push(comment);
-    //           }
-    //         }),
-    //       );
-    //     };
+      }}, 
+      // async onQueryStarted({leadId, comment}, {dispatch, queryFulfilled}) {
+      //   const handleCommentAdded = ({
+      //     leadId,
+      //     comment,
+      //   }: {
+      //     leadId: string;
+      //     comment: Comment;
+      //   }) => {
+      //     dispatch(
+      //       infoBarApi.util.updateQueryData('getSingleLead', leadId, lead => {
+      //         console.log('onQueryStarted---id and lead->',leadId)
+      //         console.log('infoBarApi.util infoBarApi.util:', infoBarApi.util);
 
-    //     socket.on(`newComment_${id}`, handleCommentAdded);
+      //         const existingComment = lead.comment.find(
+      //           c => c._id === comment._id,
+      //         );
+      //         if (!existingComment) {
+      //           lead.comment.push(comment);
+      //         }
+      //         console.log('infoBarApi.util-----existingComment:', existingComment);
 
-    //     try {
-    //       await queryFulfilled;
-    //     } finally {
-    //       socket.off(`newComment_${id}`, handleCommentAdded);
-    //     }
-    //   },
+      //       }),
+      //     );
+      //   };
+
+      //   socket.on(`newComment_${leadId}`, handleCommentAdded);
+
+      //   try {
+      //     await queryFulfilled;
+      //   } finally {
+      //     socket.off(`newComment_${leadId}`, handleCommentAdded);
+      //   }
+      // },
     }),
 
   }),
