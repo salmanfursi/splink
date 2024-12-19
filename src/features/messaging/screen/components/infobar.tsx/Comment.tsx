@@ -9,7 +9,7 @@ const Comment = ({conversationId}) => {
   const [comment, setComment] = useState('');
   const [commentsData, setCommentsData] = useState([]);
   const token = useSelector(state => state.auth.token);
-console.log('commentsData is hare----->',commentsData)
+// console.log('commentsData is hare----->',commentsData)
   const {
     data: singleLead,
     isLoading: isFetchingLead,
@@ -55,16 +55,17 @@ console.log('commentsData is hare----->',commentsData)
     }
   };
 
-  const   renderComment = ({item}) => (
+  const renderComment = ({item}) => (
     <View className="pb-2 mb-2 border-b border-gray-100">
       <Text className="text-gray-700 text-sm">{item}</Text>
     </View>
   );
 
   return (
-    <View className="bg-gray-50 rounded-lg p-4 shadow-md w-full">
+    <View className="rounded-lg shadow-md w-full">
+      <Text>Comments</Text>
       {/* Comment Input Section */}
-      <View className="flex-row items-center mb-4">
+      <View className="flex-row items-center mb-2">
         <TextInput
           className="flex-1 text-black bg-white border border-gray-200 rounded-xl px-4 py-2 mr-3"
           placeholder="Add a comment..."
@@ -83,7 +84,7 @@ console.log('commentsData is hare----->',commentsData)
       </View>
 
       {/* Recent Comments Section */}
-      <View className="bg-white rounded-lg p-3">
+      <View className="rounded-lg">
         {isFetchingLead ? (
           <Text className="text-gray-500 text-center">Loading comments...</Text>
         ) : commentsData.length > 0 ? (

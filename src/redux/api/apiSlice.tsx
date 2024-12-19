@@ -5,7 +5,7 @@ const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
     // baseUrl: 'http://192.168.23.54:5000',
-    baseUrl: 'http://192.168.68.108:5000',
+    baseUrl: 'http://192.168.68.108:5000',   
     prepareHeaders: (headers, { getState }) => {
       // Get token from auth state
       const token = (getState() as RootState).auth.token;
