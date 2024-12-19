@@ -1,223 +1,562 @@
 
- {/* Recent Comments Section */}
- <View className="bg-white rounded-lg p-3">
- {comments?.slice(0, 2).map((item) => (
-   <View 
-     key={item.id} 
-     className="pb-2 mb-2 border-b border-gray-100"
-   >
-     <Text className="text-gray-700 text-sm">{item.text}</Text>
-   </View>
- ))}
+//first choose for manually selections
 
- {comments?.length > 2 && (
-   <TouchableOpacity 
-     className="w-full items-center mt-2"
-     onPress={() => {/* Navigate to full comments view */}}
-   >
-     <Text className="text-blue-600 font-semibold">
-       Show all {comments?.length} comments
-     </Text>
-   </TouchableOpacity>
- )}
+// import React, { useState, useEffect } from 'react';
+// import { View, Text, Modal, TouchableOpacity, ScrollView } from 'react-native';
+// import { Dropdown } from 'react-native-element-dropdown';
+// import { TextInput } from 'react-native-paper';
+// import { styled } from 'nativewind';
+// import { useUpdateLeadsMutation } from '../../../../../../redux/conversation/conversationApi';
+// import {
+//   useGetAreasByDistrictQuery,
+//   useGetDistrictsByDivisionQuery,
+//   useGetDivisionsQuery,
+//   useSearchLocationQuery,
+// } from '../../../../../../redux/inboxInfoBar/map/mapApi';
 
-</View>
+// // Styled components with NativeWind
+// const StyledView = styled(View);
+// const StyledText = styled(Text);
+// const StyledTouchableOpacity = styled(TouchableOpacity);
+// const StyledScrollView = styled(ScrollView);
 
+// interface AddressModalProps {
+//   visible: boolean;
+//   onClose: () => void;
+//   leadId: string | undefined;
+// }
 
+// const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, leadId }) => {
+//   const [division, setDivision] = useState<string | null>(null);
+//   const [district, setDistrict] = useState<string | null>(null);
+//   const [area, setArea] = useState<string | null>(null);
+//   const [specificAddress, setSpecificAddress] = useState<string>('');
+//   const [searchQuery, setSearchQuery] = useState<string>(''); // Address search query
+//   const [selectedSearchResult, setSelectedSearchResult] = useState<any>(null);
+//   const [isSuggestionVisible, setIsSuggestionVisible] = useState<boolean>(false); // State to handle suggestion visibility
 
+//   const [updateLeads, { isLoading: isUpdating }] = useUpdateLeadsMutation();
+//   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-
-
-
-
-
-
-
-
-// import React, { useState, useRef } from 'react';
-// import { View, Text, ScrollView, TextInput, StyleSheet, Dimensions } from 'react-native';
-
-// const SpreadsheetGrid = () => {
-//   // Extended sample data with more rows
-//   const [gridData, setGridData] = useState([
-//     { id: 1, rollNo: '101', name: 'Alice Johnson', marks: '88', total: '77' },
-//     { id: 2, rollNo: '103', name: 'Bob Smith', marks: '92', total: '85' },
-//     { id: 3, rollNo: '105', name: 'Carol White', marks: '95', total: '90' },
-//     { id: 4, rollNo: '107', name: 'David Brown', marks: '91', total: '82' },
-//     { id: 5, rollNo: '109', name: 'Eve Wilson', marks: '87', total: '79' },
-//     { id: 6, rollNo: '111', name: 'Frank Davis', marks: '94', total: '88' },
-//     { id: 7, rollNo: '113', name: 'Grace Taylor', marks: '89', total: '84' },
-//     { id: 8, rollNo: '115', name: 'Henry Miller', marks: '93', total: '87' },
-//     { id: 9, rollNo: '117', name: 'Ivy Clark', marks: '90', total: '85' },
-//     { id: 10, rollNo: '119', name: 'Jack Lewis', marks: '86', total: '81' },
-//     { id: 11, rollNo: '121', name: 'Kelly Moore', marks: '88', total: '83' },
-//     { id: 12, rollNo: '123', name: 'Liam Hall', marks: '91', total: '86' },
-//     { id: 13, rollNo: '125', name: 'Mary Adams', marks: '94', total: '89' },
-//     { id: 14, rollNo: '127', name: 'Noah King', marks: '87', total: '82' },
-//     { id: 15, rollNo: '129', name: 'Olivia Scott', marks: '92', total: '87' },
-//     { id: 16, rollNo: '131', name: 'Peter Young', marks: '89', total: '84' },
-//     { id: 17, rollNo: '133', name: 'Quinn Baker', marks: '93', total: '88' },
-//     { id: 18, rollNo: '135', name: 'Rachel Green', marks: '90', total: '85' },
-//     { id: 19, rollNo: '137', name: 'Sam Turner', marks: '88', total: '83' },
-//     { id: 20, rollNo: '139', name: 'Tom Harris', marks: '91', total: '86' }
-//   ]);
-
-//   // Added more columns to demonstrate horizontal scrolling
-//   const columns = [
-//     'S.No.',
-//     'Roll no',
-//     'Name',
-//     'Eng marks',
-//     'Science m',
-//     'Math marks',
-//     'History m',
-//     'Geography',
-//     'Total',
-//     'Percentage',
-//     'Grade'
-//   ];
-  
-//   const mainScrollViewRef = useRef(null);
-//   const horizontalScrollViewRef = useRef(null);
-//   const verticalScrollViewRef = useRef(null);
-
-//   const renderHeaderCell = (text, index) => (
-//     <View key={index} style={[
-//       styles.headerCell,
-//       index === 0 && styles.stickyColumn
-//     ]}>
-//       <Text style={styles.headerText}>{text}</Text>
-//     </View>
+//   // Fetch data from APIs
+//   const { data: divisions } = useGetDivisionsQuery();
+//   const { data: districts, refetch: refetchDistricts } =
+//     useGetDistrictsByDivisionQuery(division, { skip: !division });
+//   const { data: areas, refetch: refetchAreas } = useGetAreasByDistrictQuery(
+//     district,
+//     { skip: !district },
 //   );
+//   const { data: searchResults } = useSearchLocationQuery(searchQuery, {
+//     skip: !searchQuery,
+//   });
 
-//   const renderCell = (text, rowIndex, cellIndex) => (
-//     <View 
-//       key={`${rowIndex}-${cellIndex}`} 
-//       style={[
-//         styles.cell,
-//         cellIndex === 0 && styles.stickyColumn
-//       ]}
-//     >
-//       <TextInput
-//         style={styles.cellInput}
-//         value={String(text)}
-//         onChangeText={(newText) => {
-//           // Implement cell update logic here
-//         }}
-//       />
-//     </View>
-//   );
-
-//   const handleMainScroll = (event) => {
-//     const { x, y } = event.nativeEvent.contentOffset;
-//     if (horizontalScrollViewRef.current) {
-//       horizontalScrollViewRef.current.scrollTo({ x, animated: false });
+//   // Auto-select states based on search result
+//   useEffect(() => {
+//     if (selectedSearchResult) {
+//       setDivision(selectedSearchResult.divisionId || null);
+//       setDistrict(selectedSearchResult.districtId || null);
+//       setArea(selectedSearchResult._id || null);
+//       setSpecificAddress(selectedSearchResult.name || '');
+//       setIsSuggestionVisible(false); // Hide suggestions after selection
+//       console.log("selectedSearchResult-------->",selectedSearchResult)
 //     }
-//     if (verticalScrollViewRef.current) {
-//       verticalScrollViewRef.current.scrollTo({ y, animated: false });
+//   }, [selectedSearchResult]);
+
+//   // Refetch dependent fields when division or district changes
+//   useEffect(() => {
+//     if (division) {
+//       refetchDistricts();
+//       setDistrict(null);
+//       setArea(null);
+//     }
+//   }, [division,refetchDistricts]);
+
+//   useEffect(() => {
+//     if (district) {
+//       refetchAreas();
+//       setArea(null);
+//     }
+//   }, [district,refetchAreas]);
+
+//   const handleSubmit = async () => {
+//     setErrorMessage(null); // Reset error message
+
+//     if (!division || !district || !area) {
+//       setErrorMessage('Please select Division, District, and Area');
+//       return;
+//     }
+
+//     try {
+//       const selectedDivision =
+//         divisions?.find(div => div._id === division)?.division || '';
+//       const selectedDistrict =
+//         districts?.find(dist => dist._id === district)?.name || '';
+//       const selectedArea = areas?.find(ar => ar._id === area)?.name || '';
+
+//       const addressData = {
+//         division: selectedDivision,
+//         district: selectedDistrict,
+//         area: selectedArea,
+//         address: specificAddress,
+//       };
+
+//       await updateLeads({
+//         id: leadId,
+//         data: { address: addressData },
+//       }).unwrap();
+
+//       onClose();
+//     } catch (error) {
+//       setErrorMessage('Failed to update address. Please try again.');
 //     }
 //   };
 
-//   const renderRow = (row, rowIndex) => (
-//     <View key={rowIndex} style={styles.row}>
-//       {renderCell(row.id, rowIndex, 0)}
-//       {renderCell(row.rollNo, rowIndex, 1)}
-//       {renderCell(row.name, rowIndex, 2)}
-//       {renderCell(row.marks, rowIndex, 3)}
-//       {renderCell(row.total, rowIndex, 4)}
-//       {renderCell('85', rowIndex, 5)}
-//       {renderCell('88', rowIndex, 6)}
-//       {renderCell('92', rowIndex, 7)}
-//       {renderCell(row.total, rowIndex, 8)}
-//       {renderCell('87%', rowIndex, 9)}
-//       {renderCell('A', rowIndex, 10)}
-//     </View>
-//   );
-
 //   return (
-//     <View style={styles.container}>
-//       {/* Fixed Header */}
-//       <View style={styles.headerContainer}>
-//         <ScrollView 
-//           horizontal 
-//           ref={horizontalScrollViewRef}
-//           scrollEventThrottle={16}
-//           showsHorizontalScrollIndicator={false}
-//         >
-//           <View style={styles.headerRow}>
-//             {columns.map((column, index) => renderHeaderCell(column, index))}
-//           </View>
-//         </ScrollView>
-//       </View>
+//     <Modal
+//       visible={visible}
+//       transparent={true}
+//       animationType="slide"
+//       onRequestClose={onClose}>
+//       <StyledView className="flex-1 justify-center bg-black/50">
+//         <StyledScrollView
+//           className="bg-white m-5 p-5 rounded-lg"
+//           keyboardShouldPersistTaps="handled">
+//           <StyledText className="text-black text-lg font-bold text-center mb-4">
+//             Add / Update Address
+//           </StyledText>
 
-//       {/* Main Grid */}
-//       <ScrollView>
-//         <ScrollView 
-//           horizontal 
-//           ref={mainScrollViewRef}
-//           onScroll={handleMainScroll}
-//           scrollEventThrottle={16}
-//         >
-//           <View>
-//             {gridData.map((row, index) => renderRow(row, index))}
-//           </View>
-//         </ScrollView>
-//       </ScrollView>
-//     </View>
+//           {/* Address Search Input */}
+//           <StyledView className="mb-4">
+//             <TextInput
+//               label="Search Address"
+//               value={searchQuery}
+//               onChangeText={text => {
+//                 setSearchQuery(text);
+//                 setIsSuggestionVisible(true); // Show suggestions when typing
+//               }}
+//               className="w-full"
+//               placeholder="Search Division, District, Area..."
+//             />
+//             {isSuggestionVisible && searchResults?.length > 0 && (
+//               <StyledScrollView className="max-h-40 bg-white border border-gray-300 mt-2 rounded-md">
+//                 {searchResults.map((result: any) => (
+//                   <StyledTouchableOpacity
+//                     key={result._id}
+//                     className="p-2 border-b border-gray-200"
+//                     onPress={() => {
+//                       setSelectedSearchResult(result);
+//                       setSearchQuery(result?.path);
+//                     }}>
+//                     <StyledText className="text-black">
+//                       {result?.path}
+//                     </StyledText>
+//                   </StyledTouchableOpacity>
+//                 ))}
+//               </StyledScrollView>
+//             )}
+//           </StyledView>
+
+//           {/* Division Dropdown */}
+//           <StyledView className="mb-4">
+//             <Text className="text-black mb-2">Division</Text>
+//             <Dropdown
+//               data={divisions || []}
+//               labelField="division"
+//               valueField="_id"
+//               placeholder="Select Division"
+//               value={division}
+//               onChange={item => setDivision(item._id)}
+//               style={{
+//                 backgroundColor: 'white',
+//                 borderWidth: 1,
+//                 borderColor: 'gray',
+//                 borderRadius: 5,
+//                 padding: 10,
+//               }}
+//             />
+//           </StyledView>
+
+//           {/* District Dropdown */}
+//           <StyledView className="mb-4">
+//             <Text className="text-black mb-2">District</Text>
+//             <Dropdown
+//               data={districts || []}
+//               labelField="name"
+//               valueField="_id"
+//               placeholder="Select District"
+//               value={district}
+//               onChange={item => setDistrict(item._id)}
+//               disable={!division}
+//               style={{
+//                 backgroundColor: 'white',
+//                 borderWidth: 1,
+//                 borderColor: 'gray',
+//                 borderRadius: 5,
+//                 padding: 10,
+//                 opacity: !division ? 0.5 : 1,
+//               }}
+//             />
+//           </StyledView>
+
+//           {/* Area Dropdown */}
+//           <StyledView className="mb-4">
+//             <Text className="text-black mb-2">Area</Text>
+//             <Dropdown
+//               data={areas || []}
+//               labelField="name"
+//               valueField="_id"
+//               placeholder="Select Area"
+//               value={area}
+//               onChange={item => setArea(item._id)}
+//               disable={!district}
+//               style={{
+//                 backgroundColor: 'white',
+//                 borderWidth: 1,
+//                 borderColor: 'gray',
+//                 borderRadius: 5,
+//                 padding: 10,
+//                 opacity: !district ? 0.5 : 1,
+//               }}
+//             />
+//           </StyledView>
+
+//           {/* Specific Address Input */}
+//           <StyledView className="mb-4">
+//             <TextInput
+//               label="Specific Address"
+//               value={specificAddress}
+//               onChangeText={setSpecificAddress}
+//               className="w-full"
+//             />
+//           </StyledView>
+
+//           {/* Error Message */}
+//           {errorMessage && (
+//             <StyledText className="text-red-500 text-center mb-4">
+//               {errorMessage}
+//             </StyledText>
+//           )}
+
+//           {/* Submit Button */}
+//           <StyledTouchableOpacity
+//             className={`p-4 rounded-md mb-2 ${
+//               isUpdating ? 'bg-gray-400' : 'bg-blue-500 active:bg-blue-600'
+//             }`}
+//             onPress={handleSubmit}
+//             disabled={isUpdating}>
+//             <StyledText className="text-white text-center font-bold">
+//               {isUpdating ? 'Updating...' : 'Submit'}
+//             </StyledText>
+//           </StyledTouchableOpacity>
+
+//           {/* Close Button */}
+//           <StyledTouchableOpacity
+//             className="p-4 rounded-md bg-gray-500 active:bg-gray-600"
+//             onPress={onClose}>
+//             <StyledText className="text-white text-center font-bold">
+//               Close
+//             </StyledText>
+//           </StyledTouchableOpacity>
+//         </StyledScrollView>
+//       </StyledView>
+//     </Modal>
 //   );
 // };
 
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: '#ffffff',
-//   },
-//   headerContainer: {
-//     backgroundColor: '#f5f5f5',
-//     zIndex: 2,
-//     elevation: 2,
-//   },
-//   headerRow: {
-//     flexDirection: 'row',
-//     borderBottomWidth: 1,
-//     borderBottomColor: '#e0e0e0',
-//   },
-//   headerCell: {
-//     width: 100,
-//     padding: 10,
-//     justifyContent: 'center',
-//     borderRightWidth: 1,
-//     borderRightColor: '#e0e0e0',
-//     backgroundColor: '#f5f5f5',
-//   },
-//   stickyColumn: {
-//     position: 'sticky',
-//     left: 0,
-//     zIndex: 1,
-//     elevation: 1,
-//     backgroundColor: '#f5f5f5',
-//   },
-//   headerText: {
-//     fontWeight: 'bold',
-//     color: '#333333',
-//   },
-//   row: {
-//     flexDirection: 'row',
-//     borderBottomWidth: 1,
-//     borderBottomColor: '#e0e0e0',
-//   },
-//   cell: {
-//     width: 100,
-//     padding: 5,
-//     justifyContent: 'center',
-//     borderRightWidth: 1,
-//     borderRightColor: '#e0e0e0',
-//     backgroundColor: '#ffffff',
-//   },
-//   cellInput: {
-//     padding: 5,
-//     color: '#333333',
-//   },
-// });
+// export default AddressModal;
 
-// export default SpreadsheetGrid;
+
+
+
+
+
+
+
+
+
+
+//second work for autometic address choose 
+
+import React, { useState, useEffect } from 'react';
+import { View, Text, Modal, TouchableOpacity, ScrollView } from 'react-native';
+import { Dropdown } from 'react-native-element-dropdown';
+import { TextInput } from 'react-native-paper';
+import { styled } from 'nativewind';
+import { useUpdateLeadsMutation } from '../../../../../../redux/conversation/conversationApi';
+import {
+  useGetAreasByDistrictQuery,
+  useGetDistrictsByDivisionQuery,
+  useGetDivisionsQuery,
+  useSearchLocationQuery,
+} from '../../../../../../redux/inboxInfoBar/map/mapApi';
+
+// Styled components with NativeWind
+const StyledView = styled(View);
+const StyledText = styled(Text);
+const StyledTouchableOpacity = styled(TouchableOpacity);
+const StyledScrollView = styled(ScrollView);
+
+interface AddressModalProps {
+  visible: boolean;
+  onClose: () => void;
+  leadId: string | undefined;
+}
+
+const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, leadId }) => {
+  const [division, setDivision] = useState<string | null>(null);
+  const [district, setDistrict] = useState<string | null>(null);
+  const [area, setArea] = useState<string | null>(null);
+  const [specificAddress, setSpecificAddress] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>(''); // Address search query
+  const [selectedSearchResult, setSelectedSearchResult] = useState<any>(null);
+  const [isSuggestionVisible, setIsSuggestionVisible] = useState<boolean>(false); // State to handle suggestion visibility
+
+  const [updateLeads, { isLoading: isUpdating }] = useUpdateLeadsMutation();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Fetch data from APIs
+  const { data: divisions } = useGetDivisionsQuery();
+  const { data: districts, refetch: refetchDistricts } =
+    useGetDistrictsByDivisionQuery(division, { skip: !division });
+  const { data: areas, refetch: refetchAreas } = useGetAreasByDistrictQuery(
+    district,
+    { skip: !district },
+  );
+  const { data: searchResults } = useSearchLocationQuery(searchQuery, {
+    skip: !searchQuery,
+  });
+
+  // Auto-select states based on search result
+  useEffect(() => {
+    if (selectedSearchResult) {
+      console.log('selectedSearchResult-------->', selectedSearchResult);
+
+      setDivision(selectedSearchResult.divisionId || null);
+      setDistrict(selectedSearchResult.districtId || null);
+      setArea(selectedSearchResult._id || null);
+      setSpecificAddress(selectedSearchResult.name || '');
+
+      if (selectedSearchResult.divisionId && divisions) {
+        const divisionData = divisions.find(div => div._id === selectedSearchResult.divisionId);
+        console.log('Matched Division:', divisionData);
+        if (divisionData) setDivision(divisionData._id);
+      }
+
+      if (selectedSearchResult.districtId && districts) {
+        const districtData = districts.find(
+          dist => dist._id === selectedSearchResult.districtId
+        );
+        console.log('Matched District:', districtData);
+        if (districtData) setDistrict(districtData._id);
+      }
+
+      setIsSuggestionVisible(false); // Hide suggestions after selection
+    }
+  }, [selectedSearchResult, divisions, districts]);
+
+  // Refetch dependent fields when division or district changes
+  useEffect(() => {
+    if (division) {
+      console.log('Fetching districts for Division ID:', division);
+      refetchDistricts();
+      setDistrict(null);
+      setArea(null);
+    }
+  }, [division, refetchDistricts]);
+
+  useEffect(() => {
+    if (district) {
+      console.log('Fetching areas for District ID:', district);
+      refetchAreas();
+      setArea(null);
+    }
+  }, [district, refetchAreas]);
+
+  const handleSubmit = async () => {
+    setErrorMessage(null); // Reset error message
+
+    if (!division || !district || !area) {
+      setErrorMessage('Please select Division, District, and Area');
+      return;
+    }
+
+    try {
+      const selectedDivision =
+        divisions?.find(div => div._id === division)?.division || '';
+      const selectedDistrict =
+        districts?.find(dist => dist._id === district)?.name || '';
+      const selectedArea = areas?.find(ar => ar._id === area)?.name || '';
+
+      const addressData = {
+        division: selectedDivision,
+        district: selectedDistrict,
+        area: selectedArea,
+        address: specificAddress,
+      };
+
+      console.log('Final Address Data:', addressData);
+
+      await updateLeads({
+        id: leadId,
+        data: { address: addressData },
+      }).unwrap();
+
+      onClose();
+    } catch (error) {
+      setErrorMessage('Failed to update address. Please try again.');
+    }
+  };
+
+  return (
+    <Modal
+      visible={visible}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={onClose}>
+      <StyledView className="flex-1 justify-center bg-black/50">
+        <StyledScrollView
+          className="bg-white m-5 p-5 rounded-lg"
+          keyboardShouldPersistTaps="handled">
+          <StyledText className="text-black text-lg font-bold text-center mb-4">
+            Add / Update Address
+          </StyledText>
+
+          {/* Address Search Input */}
+          <StyledView className="mb-4">
+            <TextInput
+              label="Search Address"
+              value={searchQuery}
+              onChangeText={text => {
+                setSearchQuery(text);
+                setIsSuggestionVisible(true); // Show suggestions when typing
+              }}
+              className="w-full"
+              placeholder="Search Division, District, Area..."
+            />
+            {isSuggestionVisible && searchResults?.length > 0 && (
+              <StyledScrollView className="max-h-40 bg-white border border-gray-300 mt-2 rounded-md">
+                {searchResults.map((result: any) => (
+                  <StyledTouchableOpacity
+                    key={result._id}
+                    className="p-2 border-b border-gray-200"
+                    onPress={() => {
+                      setSelectedSearchResult(result);
+                      setSearchQuery(result?.path);
+                    }}>
+                    <StyledText className="text-black">
+                      {result?.path}
+                    </StyledText>
+                  </StyledTouchableOpacity>
+                ))}
+              </StyledScrollView>
+            )}
+          </StyledView>
+
+          {/* Division Dropdown */}
+          <StyledView className="mb-4">
+            <Text className="text-black mb-2">Division</Text>
+            <Dropdown
+              data={divisions || []}
+              labelField="division"
+              valueField="_id"
+              placeholder="Select Division"
+              value={division}
+              onChange={item => setDivision(item._id)}
+              style={{
+                backgroundColor: 'white',
+                borderWidth: 1,
+                borderColor: 'gray',
+                borderRadius: 5,
+                padding: 10,
+              }}
+            />
+          </StyledView>
+
+          {/* District Dropdown */}
+          <StyledView className="mb-4">
+            <Text className="text-black mb-2">District</Text>
+            <Dropdown
+              data={districts || []}
+              labelField="name"
+              valueField="_id"
+              placeholder="Select District"
+              value={district}
+              onChange={item => setDistrict(item._id)}
+              disable={!division}
+              style={{
+                backgroundColor: 'white',
+                borderWidth: 1,
+                borderColor: 'gray',
+                borderRadius: 5,
+                padding: 10,
+                opacity: !division ? 0.5 : 1,
+              }}
+            />
+          </StyledView>
+
+          {/* Area Dropdown */}
+          <StyledView className="mb-4">
+            <Text className="text-black mb-2">Area</Text>
+            <Dropdown
+              data={areas || []}
+              labelField="name"
+              valueField="_id"
+              placeholder="Select Area"
+              value={area}
+              onChange={item => setArea(item._id)}
+              disable={!district}
+              style={{
+                backgroundColor: 'white',
+                borderWidth: 1,
+                borderColor: 'gray',
+                borderRadius: 5,
+                padding: 10,
+                opacity: !district ? 0.5 : 1,
+              }}
+            />
+          </StyledView>
+
+          {/* Specific Address Input */}
+          <StyledView className="mb-4">
+            <TextInput
+              label="Specific Address"
+              value={specificAddress}
+              onChangeText={setSpecificAddress}
+              className="w-full"
+            />
+          </StyledView>
+
+          {/* Error Message */}
+          {errorMessage && (
+            <StyledText className="text-red-500 text-center mb-4">
+              {errorMessage}
+            </StyledText>
+          )}
+
+          {/* Submit Button */}
+          <StyledTouchableOpacity
+            className={`p-4 rounded-md mb-2 ${
+              isUpdating ? 'bg-gray-400' : 'bg-blue-500 active:bg-blue-600'
+            }`}
+            onPress={handleSubmit}
+            disabled={isUpdating}>
+            <StyledText className="text-white text-center font-bold">
+              {isUpdating ? 'Updating...' : 'Submit'}
+            </StyledText>
+          </StyledTouchableOpacity>
+
+          {/* Close Button */}
+          <StyledTouchableOpacity
+            className="p-4 rounded-md bg-gray-500 active:bg-gray-600"
+            onPress={onClose}>
+            <StyledText className="text-white text-center font-bold">
+              Close
+            </StyledText>
+          </StyledTouchableOpacity>
+        </StyledScrollView>
+      </StyledView>
+    </Modal>
+  );
+};
+
+export default AddressModal;

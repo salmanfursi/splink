@@ -1,23 +1,16 @@
 
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  Modal,
-  TouchableOpacity,
-  ScrollView,
-} from 'react-native';
+import { View, Text, Modal, TouchableOpacity, ScrollView } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import { TextInput } from 'react-native-paper';
 import { styled } from 'nativewind';
 import { useUpdateLeadsMutation } from '../../../../../../redux/conversation/conversationApi';
-import { useGetAreasByDistrictQuery, useGetDistrictsByDivisionQuery, useGetDivisionsQuery, useSearchLocationQuery } from '../../../../../../redux/inboxInfoBar/map/mapApi';
- 
-interface AddressModalProps {
-  visible: boolean;
-  onClose: () => void;
-  leadId: string | undefined;
-}
+import {
+  useGetAreasByDistrictQuery,
+  useGetDistrictsByDivisionQuery,
+  useGetDivisionsQuery,
+  useSearchLocationQuery,
+} from '../../../../../../redux/inboxInfoBar/map/mapApi';
 
 // Styled components with NativeWind
 const StyledView = styled(View);
@@ -25,80 +18,103 @@ const StyledText = styled(Text);
 const StyledTouchableOpacity = styled(TouchableOpacity);
 const StyledScrollView = styled(ScrollView);
 
-const AddressModal: React.FC<AddressModalProps> = ({
-  visible,
-  onClose,
-  leadId,
-}) => {
+interface AddressModalProps {
+  visible: boolean;
+  onClose: () => void;
+  leadId: string | undefined;
+}
+
+const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, leadId }) => {
   const [division, setDivision] = useState<string | null>(null);
   const [district, setDistrict] = useState<string | null>(null);
   const [area, setArea] = useState<string | null>(null);
   const [specificAddress, setSpecificAddress] = useState<string>('');
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>(''); // Address search query
   const [selectedSearchResult, setSelectedSearchResult] = useState<any>(null);
+  const [isSuggestionVisible, setIsSuggestionVisible] = useState<boolean>(false); // State to handle suggestion visibility
 
   const [updateLeads, { isLoading: isUpdating }] = useUpdateLeadsMutation();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Fetch data from APIs
-  const { data: divisions, isLoading: divisionsLoading } = useGetDivisionsQuery();
-  const { 
-    data: districts, 
-    isLoading: districtsLoading,
-    refetch: refetchDistricts 
-  } = useGetDistrictsByDivisionQuery(division, { skip: !division });
-  const { 
-    data: areas, 
-    isLoading: areasLoading,
-    refetch: refetchAreas 
-  } = useGetAreasByDistrictQuery(district, { skip: !district });
-
+  const { data: divisions } = useGetDivisionsQuery();
+  const { data: districts, refetch: refetchDistricts } =
+    useGetDistrictsByDivisionQuery(division, { skip: !division });
+  const { data: areas, refetch: refetchAreas } = useGetAreasByDistrictQuery(
+    district,
+    { skip: !district },
+  );
   const { data: searchResults } = useSearchLocationQuery(searchQuery, {
     skip: !searchQuery,
   });
 
+  // Auto-select states based on search result
   useEffect(() => {
     if (selectedSearchResult) {
-      setDivision(selectedSearchResult.divisionId);
-      setDistrict(selectedSearchResult.districtId);
-      setArea(selectedSearchResult._id);
-    }
-  }, [selectedSearchResult]);
+      console.log('selectedSearchResult-------->', selectedSearchResult);
 
+      const { divisionId, districtId, _id: areaId, name: specificName } = selectedSearchResult;
+
+      // Match Division
+      if (divisionId && divisions) {
+        const divisionData = divisions.find(div => div._id === divisionId);
+        console.log('Matched Division:', divisionData);
+        if (divisionData) setDivision(divisionData._id);
+      }
+
+      // Match District
+      if (districtId && districts) {
+        const districtData = districts.find(dist => dist._id === districtId);
+        console.log('Matched District:', districtData);
+        if (districtData) setDistrict(districtData._id);
+      }
+
+      // Match Area
+      if (areaId && areas) {
+        const areaData = areas.find(ar => ar.id === areaId);
+        console.log('Matched Area:--------->', areaId,areaData?.id);
+         if (areaData) setArea(areaData?.id);
+      }
+
+      // Set Specific Address
+      setSpecificAddress(specificName || '');
+
+      setIsSuggestionVisible(false); // Hide suggestions after selection
+    }
+  }, [selectedSearchResult, divisions, districts, areas]);
+
+  // Refetch dependent fields when division or district changes
   useEffect(() => {
     if (division) {
+      console.log('Fetching districts for Division ID:', division);
       refetchDistricts();
-      // Reset dependent fields
       setDistrict(null);
       setArea(null);
     }
-  }, [division]);
+  }, [division, refetchDistricts]);
 
   useEffect(() => {
     if (district) {
+      console.log('Fetching areas for District ID:', district);
       refetchAreas();
-      // Reset dependent field
       setArea(null);
     }
-  }, [district]);
+  }, [district, refetchAreas]);
 
   const handleSubmit = async () => {
-    // Reset error message at the start of submission
-    setErrorMessage(null);
+    setErrorMessage(null); // Reset error message
 
-    // Validate inputs before submission
     if (!division || !district || !area) {
       setErrorMessage('Please select Division, District, and Area');
       return;
     }
 
     try {
-      const selectedDivision = 
+      const selectedDivision =
         divisions?.find(div => div._id === division)?.division || '';
-      const selectedDistrict = 
+      const selectedDistrict =
         districts?.find(dist => dist._id === district)?.name || '';
-      const selectedArea = 
-        areas?.find(ar => ar._id === area)?.name || '';
+      const selectedArea = areas?.find(ar => ar._id === area)?.name || '';
 
       const addressData = {
         division: selectedDivision,
@@ -106,6 +122,8 @@ const AddressModal: React.FC<AddressModalProps> = ({
         area: selectedArea,
         address: specificAddress,
       };
+
+      console.log('Final Address Data:', addressData);
 
       await updateLeads({
         id: leadId,
@@ -123,25 +141,44 @@ const AddressModal: React.FC<AddressModalProps> = ({
       visible={visible}
       transparent={true}
       animationType="slide"
-      onRequestClose={onClose}
-    >
+      onRequestClose={onClose}>
       <StyledView className="flex-1 justify-center bg-black/50">
-        <StyledScrollView 
+        <StyledScrollView
           className="bg-white m-5 p-5 rounded-lg"
-          keyboardShouldPersistTaps="handled"
-        >
+          keyboardShouldPersistTaps="handled">
           <StyledText className="text-black text-lg font-bold text-center mb-4">
             Add / Update Address
           </StyledText>
 
-          {/* Search Input */}
+          {/* Address Search Input */}
           <StyledView className="mb-4">
             <TextInput
-              label="Search Location"
+              label="Search Address"
               value={searchQuery}
-              onChangeText={setSearchQuery}
+              onChangeText={text => {
+                setSearchQuery(text);
+                setIsSuggestionVisible(true); // Show suggestions when typing
+              }}
               className="w-full"
+              placeholder="Search Division, District, Area..."
             />
+            {isSuggestionVisible && searchResults?.length > 0 && (
+              <StyledScrollView className="max-h-40 bg-white border border-gray-300 mt-2 rounded-md">
+                {searchResults.map((result: any) => (
+                  <StyledTouchableOpacity
+                    key={result._id}
+                    className="p-2 border-b border-gray-200"
+                    onPress={() => {
+                      setSelectedSearchResult(result);
+                      setSearchQuery(result?.path);
+                    }}>
+                    <StyledText className="text-black">
+                      {result?.path}
+                    </StyledText>
+                  </StyledTouchableOpacity>
+                ))}
+              </StyledScrollView>
+            )}
           </StyledView>
 
           {/* Division Dropdown */}
@@ -153,10 +190,7 @@ const AddressModal: React.FC<AddressModalProps> = ({
               valueField="_id"
               placeholder="Select Division"
               value={division}
-              onChange={(item) => {
-                setDivision(item._id);
-              }}
-              // Styling props to ensure visibility
+              onChange={item => setDivision(item._id)}
               style={{
                 backgroundColor: 'white',
                 borderWidth: 1,
@@ -164,18 +198,6 @@ const AddressModal: React.FC<AddressModalProps> = ({
                 borderRadius: 5,
                 padding: 10,
               }}
-              placeholderStyle={{ color: 'gray' }}
-              selectedTextStyle={{ color: 'black' }}
-              containerStyle={{ backgroundColor: 'white' }}
-              activeColor="lightgray"
-              renderItem={(item) => (
-                <View style={{ 
-                  padding: 10, 
-                  backgroundColor: 'white' 
-                }}>
-                  <Text style={{ color: 'black' }}>{item.division}</Text>
-                </View>
-              )}
             />
           </StyledView>
 
@@ -188,36 +210,21 @@ const AddressModal: React.FC<AddressModalProps> = ({
               valueField="_id"
               placeholder="Select District"
               value={district}
-              onChange={(item) => {
-                setDistrict(item._id);
-              }}
+              onChange={item => setDistrict(item._id)}
               disable={!division}
-              // Styling props to ensure visibility
               style={{
                 backgroundColor: 'white',
                 borderWidth: 1,
                 borderColor: 'gray',
                 borderRadius: 5,
                 padding: 10,
-                opacity: !division ? 0.5 : 1
+                opacity: !division ? 0.5 : 1,
               }}
-              placeholderStyle={{ color: 'gray' }}
-              selectedTextStyle={{ color: 'black' }}
-              containerStyle={{ backgroundColor: 'white' }}
-              activeColor="lightgray"
-              renderItem={(item) => (
-                <View style={{ 
-                  padding: 10, 
-                  backgroundColor: 'white' 
-                }}>
-                  <Text style={{ color: 'black' }}>{item.name}</Text>
-                </View>
-              )}
             />
           </StyledView>
 
           {/* Area Dropdown */}
-          <StyledView className="mb-4">
+          {/* <StyledView className="mb-4">
             <Text className="text-black mb-2">Area</Text>
             <Dropdown
               data={areas || []}
@@ -225,33 +232,49 @@ const AddressModal: React.FC<AddressModalProps> = ({
               valueField="_id"
               placeholder="Select Area"
               value={area}
-              onChange={(item) => {
-                setArea(item._id);
-              }}
+              onChange={item => {
+                console.log("Selected Area:", item);
+                setArea(item?.name)
+              }
+              }
               disable={!district}
-              // Styling props to ensure visibility
               style={{
                 backgroundColor: 'white',
                 borderWidth: 1,
                 borderColor: 'gray',
                 borderRadius: 5,
                 padding: 10,
-                opacity: !district ? 0.5 : 1
+                opacity: !district ? 0.5 : 1,
               }}
-              placeholderStyle={{ color: 'gray' }}
-              selectedTextStyle={{ color: 'black' }}
-              containerStyle={{ backgroundColor: 'white' }}
-              activeColor="lightgray"
-              renderItem={(item) => (
-                <View style={{ 
-                  padding: 10, 
-                  backgroundColor: 'white' 
-                }}>
-                  <Text style={{ color: 'black' }}>{item.name}</Text>
-                </View>
-              )}
             />
-          </StyledView>
+          </StyledView> */}
+
+          {/* Area Dropdown */}
+<StyledView className="mb-4">
+  <Text className="text-black mb-2">Area</Text>
+  <Dropdown
+    data={areas || []}
+    labelField="name"
+    valueField="_id"
+    placeholder="Select Area"
+    value={area} // Ensure `area` matches the `_id` of an area in `areas`
+    onChange={item => {
+      console.log("Selected Area:", item); // Log to confirm item selection
+      setArea(item.name); // Set the correct `_id` for the selected area
+    }}
+    disable={!district}
+    style={{
+      backgroundColor: 'white',
+      borderWidth: 1,
+      borderColor: 'gray',
+      borderRadius: 5,
+      padding: 10,
+      opacity: !district ? 0.5 : 1,
+    }}
+  />
+</StyledView>
+
+          
 
           {/* Specific Address Input */}
           <StyledView className="mb-4">
@@ -271,25 +294,21 @@ const AddressModal: React.FC<AddressModalProps> = ({
           )}
 
           {/* Submit Button */}
-          <StyledTouchableOpacity 
+          <StyledTouchableOpacity
             className={`p-4 rounded-md mb-2 ${
-              isUpdating 
-                ? 'bg-gray-400' 
-                : 'bg-blue-500 active:bg-blue-600'
+              isUpdating ? 'bg-gray-400' : 'bg-blue-500 active:bg-blue-600'
             }`}
             onPress={handleSubmit}
-            disabled={isUpdating}
-          >
+            disabled={isUpdating}>
             <StyledText className="text-white text-center font-bold">
               {isUpdating ? 'Updating...' : 'Submit'}
             </StyledText>
           </StyledTouchableOpacity>
 
           {/* Close Button */}
-          <StyledTouchableOpacity 
+          <StyledTouchableOpacity
             className="p-4 rounded-md bg-gray-500 active:bg-gray-600"
-            onPress={onClose}
-          >
+            onPress={onClose}>
             <StyledText className="text-white text-center font-bold">
               Close
             </StyledText>
