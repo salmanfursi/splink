@@ -1,10 +1,9 @@
-
-import React, { useState, useEffect } from 'react';
-import { View, Text, Modal, TouchableOpacity, ScrollView } from 'react-native';
-import { Dropdown } from 'react-native-element-dropdown';
-import { TextInput } from 'react-native-paper';
-import { styled } from 'nativewind';
-import { useUpdateLeadsMutation } from '../../../../../../redux/conversation/conversationApi';
+import React, {useState, useEffect} from 'react';
+import {View, Text, Modal, TouchableOpacity, ScrollView} from 'react-native';
+import {Dropdown} from 'react-native-element-dropdown';
+import {TextInput} from 'react-native-paper';
+import {styled} from 'nativewind';
+import {useUpdateLeadsMutation} from '../../../../../../redux/conversation/conversationApi';
 import {
   useGetAreasByDistrictQuery,
   useGetDistrictsByDivisionQuery,
@@ -24,64 +23,111 @@ interface AddressModalProps {
   leadId: string | undefined;
 }
 
-const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, leadId }) => {
+const AddressModal: React.FC<AddressModalProps> = ({
+  visible,
+  onClose,
+  leadId,
+}) => {
   const [division, setDivision] = useState<string | null>(null);
   const [district, setDistrict] = useState<string | null>(null);
   const [area, setArea] = useState<string | null>(null);
   const [specificAddress, setSpecificAddress] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>(''); // Address search query
   const [selectedSearchResult, setSelectedSearchResult] = useState<any>(null);
-  const [isSuggestionVisible, setIsSuggestionVisible] = useState<boolean>(false); // State to handle suggestion visibility
+  const [isSuggestionVisible, setIsSuggestionVisible] =
+    useState<boolean>(false); // State to handle suggestion visibility
 
-  const [updateLeads, { isLoading: isUpdating }] = useUpdateLeadsMutation();
+  const [updateLeads, {isLoading: isUpdating}] = useUpdateLeadsMutation();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
+console.log('area',area)
   // Fetch data from APIs
-  const { data: divisions } = useGetDivisionsQuery();
-  const { data: districts, refetch: refetchDistricts } =
-    useGetDistrictsByDivisionQuery(division, { skip: !division });
-  const { data: areas, refetch: refetchAreas } = useGetAreasByDistrictQuery(
+  const {data: divisions} = useGetDivisionsQuery();
+  const {data: districts, refetch: refetchDistricts} =
+    useGetDistrictsByDivisionQuery(division, {skip: !division});
+  const {data: areas, refetch: refetchAreas} = useGetAreasByDistrictQuery(
     district,
-    { skip: !district },
+    {skip: !district},
   );
-  const { data: searchResults } = useSearchLocationQuery(searchQuery, {
+  const {data: searchResults} = useSearchLocationQuery(searchQuery, {
     skip: !searchQuery,
   });
 
   // Auto-select states based on search result
+  // useEffect(() => {
+  //   if (selectedSearchResult) {
+  //     console.log('selectedSearchResult-------->', selectedSearchResult);
+
+  //     const {
+  //       divisionId,
+  //       districtId,
+  //       _id: areaId,
+  //       name: specificName,
+  //     } = selectedSearchResult;
+
+  //     // Match Division
+  //     if (divisionId && divisions) {
+  //       const divisionData = divisions.find(div => div._id === divisionId);
+  //       console.log('Matched Division:', divisionData);
+  //       if (divisionData) setDivision(divisionData._id);
+  //     }
+
+  //     // Match District
+  //     if (districtId && districts) {
+  //       const districtData = districts.find(dist => dist._id === districtId);
+  //       console.log('Matched District:', districtData);
+  //       if (districtData) setDistrict(districtData._id);
+  //     }
+
+  //     // Match Area
+  //     if (areaId && areas) {
+  //       const areaData = areas.find(ar => ar.id === areaId);
+  //       console.log('Matched Area:--------->', areaData);
+  //       if (areaData) setArea(areaData?.name);
+  //     }
+
+  //     // Set Specific Address
+  //     setSpecificAddress(specificName || '');
+
+  //     setIsSuggestionVisible(false); // Hide suggestions after selection
+  //   }
+  // }, [selectedSearchResult, divisions, districts, areas]);
+
   useEffect(() => {
     if (selectedSearchResult) {
       console.log('selectedSearchResult-------->', selectedSearchResult);
-
-      const { divisionId, districtId, _id: areaId, name: specificName } = selectedSearchResult;
-
+  
+      const {
+        divisionId,
+        districtId,
+        _id: areaId,
+      } = selectedSearchResult;
+  
       // Match Division
       if (divisionId && divisions) {
         const divisionData = divisions.find(div => div._id === divisionId);
         console.log('Matched Division:', divisionData);
         if (divisionData) setDivision(divisionData._id);
       }
-
+  
       // Match District
       if (districtId && districts) {
         const districtData = districts.find(dist => dist._id === districtId);
         console.log('Matched District:', districtData);
         if (districtData) setDistrict(districtData._id);
       }
-
+  
       // Match Area
       if (areaId && areas) {
-        const areaData = areas.find(ar => ar.id === areaId);
-        console.log('Matched Area:--------->', areaId,areaData?.id);
-         if (areaData) setArea(areaData?.id);
+        console.log("aria id",areaId)
+        const areaData = areas.find(ar => ar._id === areaId);
+        console.log('Matched Area:--------->', areaData);
+        if (areaData) setArea(areaData._id); // Automatically set area to the matched _id
       }
-
-      // Set Specific Address
-      setSpecificAddress(specificName || '');
-
+  
       setIsSuggestionVisible(false); // Hide suggestions after selection
     }
   }, [selectedSearchResult, divisions, districts, areas]);
+  
 
   // Refetch dependent fields when division or district changes
   useEffect(() => {
@@ -127,7 +173,7 @@ const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, leadId })
 
       await updateLeads({
         id: leadId,
-        data: { address: addressData },
+        data: {address: addressData},
       }).unwrap();
 
       onClose();
@@ -198,6 +244,24 @@ const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, leadId })
                 borderRadius: 5,
                 padding: 10,
               }}
+              placeholderStyle={{
+                color: 'black', // Black placeholder text
+                fontSize: 14, // Optional: Adjust font size
+              }}
+              selectedTextStyle={{
+                color: 'black', // Black selected text
+                fontSize: 14, // Optional: Adjust font size
+              }}
+              itemTextStyle={{
+                color: 'black', // Black text for dropdown items
+                fontSize: 14, // Optional: Adjust font size
+              }}
+              dropdownStyle={{
+                backgroundColor: 'white', // Ensures the dropdown's background is white
+                borderWidth: 1,
+                borderColor: 'gray',
+                borderRadius: 5,
+              }}
             />
           </StyledView>
 
@@ -220,6 +284,24 @@ const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, leadId })
                 padding: 10,
                 opacity: !division ? 0.5 : 1,
               }}
+              placeholderStyle={{
+                color: 'black', // Black placeholder text
+                fontSize: 14, // Optional: Adjust font size
+              }}
+              selectedTextStyle={{
+                color: 'black', // Black selected text
+                fontSize: 14, // Optional: Adjust font size
+              }}
+              itemTextStyle={{
+                color: 'black', // Black text for dropdown items
+                fontSize: 14, // Optional: Adjust font size
+              }}
+              dropdownStyle={{
+                backgroundColor: 'white', // Ensures the dropdown's background is white
+                borderWidth: 1,
+                borderColor: 'gray',
+                borderRadius: 5,
+              }}
             />
           </StyledView>
 
@@ -231,12 +313,11 @@ const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, leadId })
               labelField="name"
               valueField="_id"
               placeholder="Select Area"
-              value={area}
+              value={area} // Ensure `area` matches the `_id` of an area in `areas`
               onChange={item => {
-                console.log("Selected Area:", item);
-                setArea(item?.name)
-              }
-              }
+                console.log('Selected Area:', item?.name); // Log to confirm item selection
+                setArea(item?.name); // Set the correct `_id` for the selected area
+              }}
               disable={!district}
               style={{
                 backgroundColor: 'white',
@@ -246,21 +327,38 @@ const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, leadId })
                 padding: 10,
                 opacity: !district ? 0.5 : 1,
               }}
+              placeholderStyle={{
+                color: 'black',
+                fontSize: 14,
+              }}
+              selectedTextStyle={{
+                color: 'black',
+                fontSize: 14,
+              }}
+              itemTextStyle={{
+                color: 'black',
+                fontSize: 14,
+              }}
+              dropdownStyle={{
+                backgroundColor: 'white',
+                borderWidth: 1,
+                borderColor: 'gray',
+                borderRadius: 5,
+              }}
             />
           </StyledView> */}
 
-          {/* Area Dropdown */}
-<StyledView className="mb-4">
+          <StyledView className="mb-4">
   <Text className="text-black mb-2">Area</Text>
   <Dropdown
-    data={areas || []}
-    labelField="name"
-    valueField="_id"
+    data={areas || []} // Areas fetched dynamically
+    labelField="name" // Display area names
+    valueField="_id" // Use the unique _id for selection
     placeholder="Select Area"
-    value={area} // Ensure `area` matches the `_id` of an area in `areas`
+    value={area} // Ensure value matches the _id of the area
     onChange={item => {
-      console.log("Selected Area:", item); // Log to confirm item selection
-      setArea(item.name); // Set the correct `_id` for the selected area
+      console.log('Manually Selected Area:', item); // Log the selected area
+      setArea(item._id); // Store the _id of the selected area
     }}
     disable={!district}
     style={{
@@ -271,10 +369,27 @@ const AddressModal: React.FC<AddressModalProps> = ({ visible, onClose, leadId })
       padding: 10,
       opacity: !district ? 0.5 : 1,
     }}
+    placeholderStyle={{
+      color: 'black',
+      fontSize: 14,
+    }}
+    selectedTextStyle={{
+      color: 'black',
+      fontSize: 14,
+    }}
+    itemTextStyle={{
+      color: 'black',
+      fontSize: 14,
+    }}
+    dropdownStyle={{
+      backgroundColor: 'white',
+      borderWidth: 1,
+      borderColor: 'gray',
+      borderRadius: 5,
+    }}
   />
 </StyledView>
 
-          
 
           {/* Specific Address Input */}
           <StyledView className="mb-4">
