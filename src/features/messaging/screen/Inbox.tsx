@@ -59,8 +59,8 @@ export default function Inbox() {
   const navigation = useNavigation();
   const route = useRoute();
   const {conversationId, lead} = route.params;
-console.log("inobox conversationId-------->",conversationId)
-  // console.log('leads in inbox to send infobar-->', lead.message);
+// console.log("inobox conversationId-------->",conversationId)
+  // console.log('leads in inbox to send infobar-->', lead);
   const flatListRef = useRef(null);
 
   const leads = lead?.find(l => l?._id === conversationId);
