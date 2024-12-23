@@ -39,7 +39,7 @@ const AddressModal: React.FC<AddressModalProps> = ({
 
   const [updateLeads, {isLoading: isUpdating}] = useUpdateLeadsMutation();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-console.log('area',area)
+  console.log('area', area);
   // Fetch data from APIs
   const {data: divisions} = useGetDivisionsQuery();
   const {data: districts, refetch: refetchDistricts} =
@@ -53,81 +53,38 @@ console.log('area',area)
   });
 
   // Auto-select states based on search result
-  // useEffect(() => {
-  //   if (selectedSearchResult) {
-  //     console.log('selectedSearchResult-------->', selectedSearchResult);
-
-  //     const {
-  //       divisionId,
-  //       districtId,
-  //       _id: areaId,
-  //       name: specificName,
-  //     } = selectedSearchResult;
-
-  //     // Match Division
-  //     if (divisionId && divisions) {
-  //       const divisionData = divisions.find(div => div._id === divisionId);
-  //       console.log('Matched Division:', divisionData);
-  //       if (divisionData) setDivision(divisionData._id);
-  //     }
-
-  //     // Match District
-  //     if (districtId && districts) {
-  //       const districtData = districts.find(dist => dist._id === districtId);
-  //       console.log('Matched District:', districtData);
-  //       if (districtData) setDistrict(districtData._id);
-  //     }
-
-  //     // Match Area
-  //     if (areaId && areas) {
-  //       const areaData = areas.find(ar => ar.id === areaId);
-  //       console.log('Matched Area:--------->', areaData);
-  //       if (areaData) setArea(areaData?.name);
-  //     }
-
-  //     // Set Specific Address
-  //     setSpecificAddress(specificName || '');
-
-  //     setIsSuggestionVisible(false); // Hide suggestions after selection
-  //   }
-  // }, [selectedSearchResult, divisions, districts, areas]);
 
   useEffect(() => {
     if (selectedSearchResult) {
       console.log('selectedSearchResult-------->', selectedSearchResult);
-  
-      const {
-        divisionId,
-        districtId,
-        _id: areaId,
-      } = selectedSearchResult;
-  
+
+      const {divisionId, districtId, _id: areaId} = selectedSearchResult;
+
       // Match Division
       if (divisionId && divisions) {
         const divisionData = divisions.find(div => div._id === divisionId);
         console.log('Matched Division:', divisionData);
         if (divisionData) setDivision(divisionData._id);
       }
-  
+
       // Match District
       if (districtId && districts) {
         const districtData = districts.find(dist => dist._id === districtId);
         console.log('Matched District:', districtData);
         if (districtData) setDistrict(districtData._id);
       }
-  
+
       // Match Area
       if (areaId && areas) {
-        console.log("aria id",areaId)
-        const areaData = areas.find(ar => ar._id === areaId);
+        console.log('aria id', areaId);
+        const areaData = areas.find(ar => ar.id === areaId);
         console.log('Matched Area:--------->', areaData);
-        if (areaData) setArea(areaData._id); // Automatically set area to the matched _id
+        if (areaData) setArea(areaData.id); // Automatically set area to the matched _id
       }
-  
+
       setIsSuggestionVisible(false); // Hide suggestions after selection
     }
   }, [selectedSearchResult, divisions, districts, areas]);
-  
 
   // Refetch dependent fields when division or district changes
   useEffect(() => {
@@ -143,7 +100,7 @@ console.log('area',area)
     if (district) {
       console.log('Fetching areas for District ID:', district);
       refetchAreas();
-      setArea(null);
+      // setArea(null);
     }
   }, [district, refetchAreas]);
 
@@ -285,19 +242,19 @@ console.log('area',area)
                 opacity: !division ? 0.5 : 1,
               }}
               placeholderStyle={{
-                color: 'black', // Black placeholder text
-                fontSize: 14, // Optional: Adjust font size
+                color: 'black',  
+                fontSize: 14,  
               }}
               selectedTextStyle={{
-                color: 'black', // Black selected text
-                fontSize: 14, // Optional: Adjust font size
+                color: 'black',  
+                fontSize: 14,  
               }}
               itemTextStyle={{
-                color: 'black', // Black text for dropdown items
-                fontSize: 14, // Optional: Adjust font size
+                color: 'black',  
+                fontSize: 14,  
               }}
               dropdownStyle={{
-                backgroundColor: 'white', // Ensures the dropdown's background is white
+                backgroundColor: 'white',  
                 borderWidth: 1,
                 borderColor: 'gray',
                 borderRadius: 5,
@@ -306,17 +263,17 @@ console.log('area',area)
           </StyledView>
 
           {/* Area Dropdown */}
-          {/* <StyledView className="mb-4">
+          <StyledView className="mb-4">
             <Text className="text-black mb-2">Area</Text>
             <Dropdown
-              data={areas || []}
-              labelField="name"
-              valueField="_id"
+              data={areas || []}  
+              labelField="name"  
+              valueField="id"  
               placeholder="Select Area"
-              value={area} // Ensure `area` matches the `_id` of an area in `areas`
+              value={area}  
               onChange={item => {
-                console.log('Selected Area:', item?.name); // Log to confirm item selection
-                setArea(item?.name); // Set the correct `_id` for the selected area
+                 console.log('Manually Selected Area item without:',item.id );  
+                setArea(item.id);  
               }}
               disable={!district}
               style={{
@@ -346,50 +303,7 @@ console.log('area',area)
                 borderRadius: 5,
               }}
             />
-          </StyledView> */}
-
-          <StyledView className="mb-4">
-  <Text className="text-black mb-2">Area</Text>
-  <Dropdown
-    data={areas || []} // Areas fetched dynamically
-    labelField="name" // Display area names
-    valueField="_id" // Use the unique _id for selection
-    placeholder="Select Area"
-    value={area} // Ensure value matches the _id of the area
-    onChange={item => {
-      console.log('Manually Selected Area:', item); // Log the selected area
-      setArea(item._id); // Store the _id of the selected area
-    }}
-    disable={!district}
-    style={{
-      backgroundColor: 'white',
-      borderWidth: 1,
-      borderColor: 'gray',
-      borderRadius: 5,
-      padding: 10,
-      opacity: !district ? 0.5 : 1,
-    }}
-    placeholderStyle={{
-      color: 'black',
-      fontSize: 14,
-    }}
-    selectedTextStyle={{
-      color: 'black',
-      fontSize: 14,
-    }}
-    itemTextStyle={{
-      color: 'black',
-      fontSize: 14,
-    }}
-    dropdownStyle={{
-      backgroundColor: 'white',
-      borderWidth: 1,
-      borderColor: 'gray',
-      borderRadius: 5,
-    }}
-  />
-</StyledView>
-
+          </StyledView>
 
           {/* Specific Address Input */}
           <StyledView className="mb-4">
