@@ -21,6 +21,7 @@ const RootNavigator = () => {
       const token = await AsyncStorage.getItem('token');
       const user = await AsyncStorage.getItem('user');
       // console.log('token', token, 'user', user);
+      // console.log('token', token, 'user', user);
       if (token && user) {
         // Set initial state if token is valid
         dispatch(
@@ -44,11 +45,11 @@ const RootNavigator = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{headerShown: false}}>
-         {!isLoggedIn ? (
+         {/* {!isLoggedIn ? (
             <Stack.Screen name="Login" component={LoginScreen} />  
-         ) : (   
+         ) : (    */}
           <Stack.Screen name="Main" component={BottomTabNavigator} />
-        )}   
+            {/* )}  */}
       </Stack.Navigator>
     </NavigationContainer>
   );

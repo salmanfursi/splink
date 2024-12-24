@@ -239,11 +239,15 @@ const conversationApi = apiSlice.injectEndpoints({
 
     // Update a lead
     updateLeads: builder.mutation<Lead, {id: string; data: UpdateLeadPayload}>({
-      query: ({id, data}) => ({
+      query: ({id, data}) => {
+          // Log the incoming data and ID
+    console.log('Updating lead with ID:', id);
+    console.log('Data being sent:', data);
+        return{
         url: `/lead/${id}`,
         method: 'PUT',
         body: data,
-      }),
+      }},
       invalidatesTags: (result, error, {id}) => [{type: 'Lead', id}],
     }),
   }),
