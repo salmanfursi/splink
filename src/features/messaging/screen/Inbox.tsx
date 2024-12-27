@@ -30,7 +30,7 @@ export default function Inbox() {
   const closeCallSheet = () => {
     callSheetRef.current?.dismiss();
   };
-  //will be remove letter 
+  //will be remove letter
   const leadData = {
     name: 'John Doe',
     status: 'Active Lead',
@@ -59,7 +59,7 @@ export default function Inbox() {
   const navigation = useNavigation();
   const route = useRoute();
   const {conversationId, lead} = route.params;
-// console.log("inobox conversationId-------->",conversationId)
+  // console.log("inobox conversationId-------->",conversationId)
   // console.log('leads in inbox to send infobar-->', lead);
   const flatListRef = useRef(null);
 
@@ -73,7 +73,7 @@ export default function Inbox() {
 
   // Scroll to the bottom whenever new messages are loaded
   useEffect(() => {
-     if (conversation?.messages) {
+    if (conversation?.messages) {
       flatListRef.current?.scrollToEnd({animated: true});
     }
   }, [conversation]);
@@ -137,8 +137,7 @@ export default function Inbox() {
           isOpen={isSidebarOpen}
           onOpen={openSidebar}
           onClose={closeSidebar}
-          conversationId={conversationId}
-        >
+          conversationId={conversationId}>
           <View className="flex-1 bg-gray-200">
             <View className="bg-blue-400 p-2 flex-row justify-between">
               <View className="flex-row gap-2 items-center ">
@@ -211,7 +210,7 @@ export default function Inbox() {
 
           {/* Meeting Bottom Sheet */}
           <MeetingBottomSheet ref={bottomSheetRef} onClose={closeBottomSheet} />
-          </InfoSidebar>
+        </InfoSidebar>
       </KeyboardAvoidingView>
     </BottomSheetModalProvider>
   );

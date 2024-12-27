@@ -27,26 +27,6 @@ const StyledTouchableOpacity = styled(TouchableOpacity);
 const AddressCard: React.FC<AddressCardProps> = ({leadId}) => {
   const [isModalOpen, setModalOpen] = useState(false);
 
-  // const address= [
-  //   {
-  //     division: "Dhaka",
-  //     district: "Gulshan",
-  //     area: "Banani",
-  //     address: "House 123, Road 11",
-  //   },
-  //   {
-  //     division: "Chattogram",
-  //     district: "Double Mooring",
-  //     area: "Agrabad",
-  //     address: "Office 456, Avenue 3",
-  //   },
-  //   {
-  //     division: "Sylhet",
-  //     district: "Jaintapur",
-  //     area: "Lamakazi",
-  //     address: "Village 789, Main Street",
-  //   },
-  // ];
 
   const {
     data: singleLead,
@@ -54,7 +34,7 @@ const AddressCard: React.FC<AddressCardProps> = ({leadId}) => {
     isError: isLeadError,
     refetch,
   } = useGetSingleLeadQuery(leadId, {skip: !leadId});
-console.log("singleLead-----addres",singleLead.address)
+console.log("singleLead-----addres",singleLead?.address)
 
   const handleModalOpen = () => {
     setModalOpen(true);
@@ -77,7 +57,7 @@ console.log("singleLead-----addres",singleLead.address)
       <StyledView className="bg-gray-100 p-3 rounded-md">
         <StyledText className="text-sm text-gray-800">
           {singleLead
-            ? `${singleLead.address?.address}, ${singleLead.address.area}, ${singleLead.address.district}, ${singleLead.address.division}`
+            ? `${singleLead?.address?.address}, ${singleLead?.address?.area}, ${singleLead?.address?.district}, ${singleLead?.address?.division}`
             : 'No address available. Please add one.'}
         </StyledText>
       </StyledView>
